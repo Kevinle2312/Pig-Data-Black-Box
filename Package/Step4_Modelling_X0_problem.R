@@ -1,0 +1,711 @@
+#==========================================================================
+#
+# Model ode.pert.14/11 - Jaap and Hieu - 14/11 /2017
+#
+# DESCRIPTION: Model with p1 constant and orignial maxcompFI (without reparametrization)
+#
+#==========================================================================
+ 
+
+  rm(list=ls(all=TRUE)) #To remove the hisory 
+  # dev.off() #To close all graphs
+
+#==========================================================================
+
+  setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
+  # setwd("/Users/nguyenbahieu/Dropbox/INRA/Modelling_Perturbation/Hieu_PHD_shared/Data/Finished-R-scripts/All\ steps/individual/")
+  
+  #-------------------------------------------------------------------------------
+  # Import data file and functions
+  #-------------------------------------------------------------------------------
+    
+   #Packages
+    library(deSolve)
+    library(nlstools)
+    library(nlsMicrobio)
+    library(proto)
+    library(nls2)
+    library(ggplot2)
+    library(dplyr)
+
+        
+  #-------------------------------------------------------------------------------
+  # Import data file and functions
+  #-------------------------------------------------------------------------------
+  
+     load("Data income/JRP.Per.detec.RData") #load dataset created in MissingData.step
+     load("Data income/JRPData.Rdata")
+     load("Data income/JRPData_TTC.RData")
+     load("Data income/JRP.DFI.pos1.RData")
+     load("Data income/JRP.DFI.pos2.RData")
+     load("Data income/JRP.DFI.neg.RData")
+     source("Package/abcd.R") #functions
+     source("Package/Step4_functions_X0_problem.R")
+     options(digits=3) 
+
+#===============================================================
+# DATA PREPARATION
+#===============================================================
+        
+ #Order number of Animal_ID
+   ID <- unique(as.factor(No.NA.Data$ANIMAL_ID))
+      
+ #-------------------------------------------------------------------------------
+ # Extract data for animal i
+ #-------------------------------------------------------------------------------
+        
+  CFI.obs <- No.NA.Data$CFI.plot
+  DFI.obs <- No.NA.Data$DFI.plot
+  Age <- No.NA.Data$Age.plot
+  
+  #Difference between actual and target CFI (kg)    
+  res <- fn.res$res
+  
+  #Information of TTC function
+  # TTC.param <- merge(ITC.param.pos2,ITC.param.pos1,ITC.param.neg,by = "ANIMAL_ID")
+  TTC.param <- ITC.param.pos2 %>% full_join(ITC.param.pos1)
+  TTC.param <- TTC.param %>% full_join(ITC.param.neg)
+  FuncType <- TTC.param$FuncType; FuncType
+  Slope <- TTC.param$Slope
+  
+  #Magnitude of the perturbation
+  magnitude <- fn.res %>% filter(Age >= fn.pertub.table$Start & Age <= fn.pertub.table$End)
+  # magnitude   = res.data %>% filter(Age >= pertub.table$Start[1] & Age <= pertub.table$End[1])
+  magnitude <- magnitude %>% filter(res == min(magnitude$res))
+  
+## ======================= TTC ======================================================
+      
+  #-------------------------------------------------------------------------------
+  # Calulate TTC using abcd function
+  #-------------------------------------------------------------------------------
+  
+  if(FuncType == "LM"){
+    param.i <- TTC.param[, 6:7]
+    ITC <- pred.abcd.0(param.i, Age)[[1]]
+    ITD <- rep(param.i[2], length(Age))
+    
+  } else if(FuncType == "QDR"){
+    param.i <- TTC.param[, 6:8]
+    ITC <- pred.abcd.1(param.i, Age)[[1]]
+    ITD <- pred.abcd.1(param.i, Age)[[2]]
+    
+  } else{
+    param.i <- TTC.param[, 6:8]
+    Xs <- TTC.param$Xs
+    ITC <- pred.abcd.2(param.i, Age)[[1]]
+    ITD <- pred.abcd.2(param.i, Age)[[2]]
+    
+  }
+  
+  #-------------------------------------------------------------------------------
+  #Plot
+  #-------------------------------------------------------------------------------
+       
+  B <- dev.df[!is.na(dev.df$ppert),]
+  
+  plot(Age, res,
+      main = paste( "Pig ID:", ID, "\nDifference between CFI and TTC"),
+      xlab = "Age (days)",
+      ylab = "Amount of difference: CFI - TTC (kg)",
+      type = "o", pch = 10, cex = 0.5,
+      # ylim = c(min(B$dif.CFI, res),
+      #          max(B$dif.CFI, res)),
+     cex.main = 1.5, cex.lab = 1.2)
+  abline(0,0, col = "red")
+  points(fn.pertub.table$Start, fn.pertub.table$value.start,
+        col = "orange", pch=15, cex = 2)
+  points(fn.pertub.table$End, fn.pertub.table$value.end,
+        col = "green", pch=17, cex = 2)
+  points(magnitude$Age, magnitude$res,
+         col = "purple", pch=19, cex = 2)
+        
+#=================================== ================== ================== ==================
+#  Modelling the response of the animal to a single perturbation
+#=================================== ================== ================== ==================
+  
+#------------------------------
+# Linear function for TTC
+#------------------------------
+if(FuncType == "LM"){    
+  
+  ##-----------------------------
+  ## initial values and times
+  ##-----------------------------
+  tbeg1 <- fn.pertub.table$Start # tbeg1 corresponds to the start point
+  tstop1 <- magnitude$Age
+  p1 <- 0.1 #because we modified negative impact of perturbation as (p1 -1), the smaller p1 is the more severe impact is
+  max.compFI1 <- 4
+  a <- TTC.param$a
+  b <- TTC.param$b
+  
+  yinit <- c(CumFI = ITC[1]) #state
+  times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
+  
+  ##-----------------------------
+  ## parameters
+  ##-----------------------------
+  
+  param <- c(p1, max.compFI1, tbeg1, tstop1, a, b)
+  
+  ##-----------------------------
+  ## solve the model
+  ##-----------------------------
+  
+  yout <- ode(as.numeric(unlist(yinit)),
+              times = times.ode,
+              func = ODE.CFI.0,
+              parms = param,
+              atol = 1e-10,
+              rtol = 1e-10)
+  summary(yout)
+  
+  ##--------------------------------------------------
+  ## plot when fitting initial parameters to the model
+  ##--------------------------------------------------
+  
+  Time <- times.ode
+  onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
+  ITC.sim <- pred.abcd.0(param.i, Time)[[1]]
+  
+  #Difference between actual and target CFI (simulation)
+  plot(yout[ , 1], yout[ ,2] -(ITC.sim),
+       xlab = "Age (days)", type = "l", ylab = "CFI - TTC(kg)", 
+       ylim = c(min(CFI.obs - ITC, yout[ ,2] -(ITC.sim)), max(CFI.obs - ITC, yout[ ,2] -(ITC.sim))),
+       lwd = 2,
+       cex.main = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+  points ( Age,  CFI.obs - ITC, type = "p", col = "red")
+  abline(v=tbeg1, lty=2)
+  abline(v=tstop1, lty = 2)
+  abline(0,0, col = "red")
+  par(mfrow = c(1,1))
+  # dev.off()
+  
+  # ==============  Estimation of parameters ================== ==================
+  
+  ##-----------------------------
+  ## initial values and times
+  ##-----------------------------
+  
+  yinit <- c(CumFI = ITC[1]) #state
+  times.ode <- seq(from = Age[1], to = Age[length(Age)], by = 1)
+  
+  ##-----------------------------
+  ## parameters
+  ##-----------------------------
+  
+  par.init <- c(p1, max.compFI1, tbeg1, tstop1)
+  
+  ##-----------------------------
+  ## solve the model
+  ##-----------------------------
+  
+  yout <- ode(as.numeric(unlist(yinit)),
+              times = times.ode,
+              func = ODE.CFI.optim.0,
+              parms = par.init,
+              atol = 1e-10,
+              rtol = 1e-10)
+  
+  summary(yout)
+  
+  
+  ##-----------------------------
+  #  run the optimization with NLS2
+  ##-----------------------------
+  Data.xy <- Data
+  times <- Data.xy$Age.plot
+  ODE.CFI.obj.0(par.init, Data.xy)
+  
+  #Estimate parameters by Optim and the best initial parameters
+  optim.res <- optim(par.init, ODE.CFI.obj.0, hessian = TRUE)
+  
+  P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4])
+  P.optim
+  
+  ODE.CFI.obj.0(P.optim, Data.xy)
+  
+  # Simulate the ode function
+  yout   <- ode(yinit, times, ODE.CFI.optim.0, P.optim)
+  
+} else{}
+  
+#----------------------------------
+# Quadratic function for TTC
+#----------------------------------  
+
+if(FuncType == "QDR"){    
+    
+    ##-----------------------------
+    ## initial values and times
+    ##-----------------------------
+    tbeg1 <- fn.pertub.table$Start[1]
+    # tbeg1       = pertub.table$Start # tbeg1 corresponds to the start point
+    tstop1 <- magnitude$Age
+    p1 <- 0.3 #because we modified negative impact of perturbation as (p1 -1), the smaller p1 is the more severe impact is
+    max.compFI1 <- 6
+    a <- TTC.param$a
+    b <- TTC.param$b
+    c <- TTC.param$c
+    
+    # yinit <- c(CumFI = ITC[1]) #state
+    yinit <- c(CumFI = ITC[1])
+    times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
+    
+    ##-----------------------------
+    ## parameters
+    ##-----------------------------
+    
+    param <- c(p1, max.compFI1, tbeg1, tstop1, a, b, c)
+    
+    ##-----------------------------
+    ## solve the model
+    ##-----------------------------
+    
+    yout <- ode(y= as.numeric(unlist(yinit)),
+                times = times.ode,
+                func = ODE.CFI.1,
+                parms = param,
+                atol = 1e-10,
+                rtol = 1e-10)
+    summary(yout)
+    
+    ##--------------------------------------------------
+    ## plot when fitting initial parameters to the model
+    ##--------------------------------------------------
+    
+    Time <- times.ode
+    onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
+    ITC.sim <- pred.abcd.1(param.i, Time)[[1]]
+    
+    #Difference between actual and target CFI (simulation)
+    plot(yout[ , 1], yout[ ,2] -(ITC.sim),
+         xlab = "Age (days)", type = "l", ylab = "CFI - TTC(kg)", 
+         ylim = c(min(CFI.obs - ITC, yout[ ,2] -(ITC.sim)), max(CFI.obs - ITC, yout[ ,2] -(ITC.sim))),
+         lwd = 2,
+         cex.main = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+    points ( Age,  CFI.obs - ITC, type = "p", col = "red")
+    abline(v=tbeg1, lty=2)
+    abline(v=tstop1, lty = 2)
+    abline(0,0, col = "red")
+    par(mfrow = c(1,1))
+    # dev.off()
+    
+    # ==============  Estimation of parameters ================== ==================
+    
+    ##-----------------------------
+    ## initial values and times
+    ##-----------------------------
+    
+    yinit <- c(CumFI = ITC[1]) #state
+    times.ode <- seq(from = Age[1], to = Age[length(Age)], by = 1)
+    
+    ##-----------------------------
+    ## parameters
+    ##-----------------------------
+    
+    par.init <- c(p1, max.compFI1, tbeg1, tstop1)
+    
+    ##-----------------------------
+    ## solve the model
+    ##-----------------------------
+    
+    yout <- ode(y= as.numeric(unlist(yinit)),
+                times = times.ode,
+                func = ODE.CFI.optim.1,
+                parms = par.init,
+                atol = 1e-10,
+                rtol = 1e-10)
+    
+    summary(yout)
+    
+    
+    ##-----------------------------
+    #  run the optimization with NLS2
+    ##-----------------------------
+    Data.xy <- Data
+    times <- Data.xy$Age.plot
+    ODE.CFI.obj.1(par.init, Data.xy)
+    
+    #Estimate parameters by Optim and the best initial parameters
+    optim.res <- optim(par.init, ODE.CFI.obj.1, hessian = TRUE)
+    
+    P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4])
+    P.optim
+    
+    ODE.CFI.obj.1(P.optim, Data.xy)
+    
+    # Simulate the ode function
+    yout   <- ode(yinit, times, ODE.CFI.optim.1, P.optim)
+    
+    
+  } else{}  
+
+#----------------------------------
+# Quadratic-linear function for TTC
+#----------------------------------
+if(FuncType == "QLM"){
+  
+  ##-----------------------------
+  ## initial values and times
+  ##-----------------------------
+  
+  tbeg1 <- fn.pertub.table$Start # tbeg1 corresponds to the start point
+  tstop1 <- magnitude$Age
+  p1 <- 0.3 #because we modified negative impact of perturbation as (p1 -1), the smaller p1 is the more severe impact is
+  max.compFI1 <- 7
+  a <- TTC.param$a
+  b <- TTC.param$b
+  c <- TTC.param$c
+  Xs <- TTC.param$Xs
+
+  yinit <- c(CumFI = ITC[1]) #state
+  times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
+
+ ##-----------------------------
+ ## parameters
+ ##-----------------------------
+
+ param <- c(p1, max.compFI1, tbeg1, tstop1, a, b, c, Xs)
+
+ ##-----------------------------
+ ## solve the model
+ ##-----------------------------
+
+  yout <- ode(y= as.numeric(unlist(yinit)),
+              times = times.ode,
+              func = ODE.CFI.2,
+              parms = param,
+              atol = 1e-10,
+              rtol = 1e-10)
+  summary(yout)
+
+
+ ##--------------------------------------------------
+ ## plot when fitting initial parameters to the model
+ ##--------------------------------------------------
+
+ Time <- times.ode
+ onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
+ ITC.sim <- pred.abcd.2(param.i, Time)[[1]]
+
+ par(mar=c(4.5,4.5,4.5,1.5))
+
+ #Difference between actual and target CFI (simulation)
+   plot(yout[ , 1], yout[ ,2] -(ITC.sim),
+        xlab = "Age (days)", type = "l", ylab = "CFI - TTC(kg)",
+        ylim = c(min(CFI.obs - ITC, yout[ ,2] -(ITC.sim)), max(CFI.obs - ITC, yout[ ,2] -(ITC.sim))),
+        lwd = 2,
+        cex.main = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+   points ( Age,  CFI.obs -( ITC), type = "p", col = "red")
+   abline(v=tbeg1, lty=2)
+   abline(v=tstop1, lty = 2)
+   abline(0,0, col = "red")
+   par(mfrow = c(1,1))
+   # dev.off()
+
+# ==============  Estimation of parameters ================== ==================
+
+ ##-----------------------------
+ ## initial values and times
+ ##-----------------------------
+
+ yinit <- c(CumFI = ITC[1]) #state
+ times.ode <- seq(from = Age[1], to = Age[length(Age)], by = 1)
+
+ ##-----------------------------
+ ## parameters
+ ##-----------------------------
+
+ par.init <- c(p1, max.compFI1, tbeg1, tstop1)
+
+ ##-----------------------------
+ ## solve the model
+ ##-----------------------------
+
+ yout <- ode(y= as.numeric(unlist(yinit)),
+             times = times.ode,
+             func = ODE.CFI.optim.2,
+             parms = par.init,
+             atol = 1e-10,
+             rtol = 1e-10)
+
+ summary(yout)
+
+
+  ##-----------------------------
+  #  run the optimization with NLS2
+  ##-----------------------------
+  Data.xy <- Data
+  times <- Data.xy$Age.plot
+  ODE.CFI.obj.2(par.init, Data.xy)
+
+  #Estimate parameters by Optim and the best initial parameters
+  optim.res <- optim(par.init, ODE.CFI.obj.2, hessian = TRUE)
+
+  P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4])
+  P.optim
+
+  ODE.CFI.obj.2(P.optim, Data.xy)
+
+  # Simulate the ode function
+  yout   <- ode(yinit, times, ODE.CFI.optim.2, P.optim)
+
+} else{}
+  
+###############################################################################
+##-----------------------------
+#  Prepare for plotting
+##-----------------------------
+  
+  p1 <- P.optim[1]
+  max.compFI1 <- P.optim[2]
+  tbeg1 <- P.optim[3]
+  tstop1 <- P.optim[4]
+  
+  Time <- times.ode
+  onoff <- ifelse(Time>P.optim[3] & Time<P.optim[4], 1, 0)
+  #Target trajectory curve
+  ITC; ITD
+  #Compensatory feed intake
+  CompFI <- (1-yout[, 2]/ITC)*max.compFI1
+  #Simulation of DFI
+  DFI.sim <- (onoff*(p1-1) + CompFI + 1)*ITD
+  #Ratio of DFI
+  Ratio.DFI <- DFI.sim/ITD
+  
+  #-----------------------------
+  # plot the results
+  #-----------------------------
+  #Ratio between actual and target CFI
+  plot(Time, yout[,2]/ITC,
+       main = "Ratio between CFI and ITC_CFI", type = "l",
+       xlab = "Age (days)", ylab= "Ratio", col="black",
+       # ylim = c(0.94,1),
+       lwd = 2)
+  abline(v=P.optim[3], lty=2)
+  abline(v=P.optim[4], lty=2)
+  
+  #Compensatory feed intake
+  par(mfrow = c(1,1))
+  # plot(Time, onoff, type = "l", ylab = "onoff")
+  plot(Time, CompFI,
+       main = "Compensatory of feed intake", type = "l", ylab= "compensatory (%)", xlab = "Age (days)",
+       col="black",
+       # ylim = c(1, 1.4),
+       lwd = 2)
+  abline(v=P.optim[3], lty=2)
+  abline(v=P.optim[4], lty=2)
+
+  #Impact of p1
+  plot(Time, 0- onoff*(1-p1),
+       main = "Impact of p1", type = "l", ylab= "Reduction in DFI (%)", col="black")
+
+  #Ratio between actual and target CFI
+
+  plot(Time, yout[,2]/ITC,
+       main = "Ratio between CFI and ITC_CFI", type = "l",
+       xlab = "Age (days)", ylab= "Ratio", col="black",
+       # ylim = c(0.94,1),
+       lwd = 2)
+  abline(v=P.optim[3], lty=2)
+  abline(v=P.optim[4], lty=2)
+
+  #MAIN PLOTS
+  par(mar=c(4.5,4.5,4.5,1.5))
+  #dif
+  plot(Age, CFI.obs - ITC,
+       main = paste("Difference between CFI and ITC_CFI", "\nPig ID:", ID),
+       xlab = "Age (days)", ylab = "CFI - ITC (kg)",
+       ylim = c(min(CFI.obs - ( ITC),  yout[ ,2] -( ITC)),
+                max(CFI.obs - ( ITC),  yout[ ,2] -( ITC))),
+       type = "p", col = "red",
+       cex.main = 1.7, cex.axis = 1.5, cex.lab = 1.5)
+  abline(0,0, col = "blue", lwd = 2)
+  points ( yout[ , 1],  yout[ ,2] -ITC,type = "l", lwd = 2.2)
+  abline(v=P.optim[3], lty=3)
+  abline(v=P.optim[4], lty=3)
+  legend("bottomleft",legend = c("ITC", "Dif-obs", "Dif-simul"), col = c("blue","red", "black"),
+         lty = c(1,NA, 1), pch = c(NA, 1, NA), bty = "n", lwd = 3, cex = 1.5, pt.cex = 2.5)
+  # dev.off()
+  par(mfrow = c(1,1))
+  
+  #ggplot2
+  #Compensatory feed intake and perturbation effect
+  AF1 <- data.frame(cbind(Time, CompFI*100))
+  names(AF1) <- c("Age.plot", "Percent")
+  AF1 <- AF1 %>% mutate(Curve = rep("Resilience", length(Time)))
+  
+  AF2 <- data.frame(cbind(Time, (0- onoff*(1-p1))*100))
+  names(AF2) <- c("Age.plot", "Percent")
+  AF2 <- AF2 %>% mutate(Curve = rep("Resistance", length(Time)))
+  
+  AF3 <- data.frame(cbind(Time, rep(0, length(Time))))
+  names(AF3) <- c("Age.plot", "Percent")
+  AF3 <- AF3 %>% mutate(Curve = rep("AA", length(Time)))
+  
+  AF <- rbind(AF1, AF2, AF3)
+  
+  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Ratio", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  cols.CFI <- c("Resilience" = "green", "Resistance" = "purple", "AA" = "blue")
+  type.CFI <- c("Resilience" = "solid", "Resistance" = "solid", "AA" = "dashed")
+  size.CFI <- c("Resilience" = 1.3, "Resistance" = 2.5, "AA" = 1)
+  ggplot(data = AF, aes(x = Age.plot, y = Percent)) + 
+    # geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1)+
+    geom_line(aes(color = Curve, linetype=Curve, size = Curve)) +
+    scale_color_manual(values = cols.CFI, labels = c("Target", "Resilience", "Resistance")) +
+    scale_linetype_manual(values = type.CFI, labels = c("Target", "Resilience", "Resistance"))+
+    scale_size_manual(values = size.CFI, labels = c("Target", "Resilience", "Resistance"))+
+    xlab("Age, d") +
+    ylab("Change in daily feed intake (%)") +
+    expand_limits(y=-10,100)+
+    scale_y_continuous(breaks=seq(-100, 100, 10)) +
+    scale_x_continuous(breaks=seq(60, 240, 20)) +
+    ggtitle(paste("Change in DFI of", "the pig", ID, "\nduring and after a single perturbation")) +
+    theme(plot.title = element_text(hjust = .5)) + 
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.line = element_line(colour = "black")
+    ) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold"))
+  dev.off()
+  
+  #CFI data preparation
+  cf1 <- data.frame(cbind(Age, ITC))
+  names(cf1) <- c("Age.plot", "CFI.plot")
+  cf1 <- cf1 %>% mutate(Curve = rep("Target_CFI", length(Age)))
+  
+  cf2 <- data.frame(cbind(yout[ , 1], yout[ ,2]))
+  names(cf2) <- c("Age.plot", "CFI.plot")
+  cf2 <- cf2 %>% mutate(Curve = rep("Simu_CFI", length(Age)))
+  
+  cf <- rbind(cf1, cf2)
+  cf3 <- Data %>% select(Age.plot, CFI.plot)
+  
+  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Simu_CFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  cols.CFI <- c("Target_CFI" = "blue", "Simu_CFI" = "red")
+  typs.CFI <- c("Target_CFI" = "solid", "Simu_CFI" = "solid")
+  size.CFI <- c("Target_CFI" = 1, "Simu_CFI" = 1.8)
+  ggplot(data = cf, aes(x = Age.plot, y = CFI.plot)) + 
+    geom_point(data = cf3, aes(x = Age, y = CFI.obs), color = "black", shape = 21, size = 3, stroke = 0.5) +
+    geom_line(aes(color = Curve, linetype = Curve, size = Curve)) +
+    scale_color_manual(values = cols.CFI) +
+    scale_linetype_manual(values = typs.CFI) +
+    scale_size_manual(values = size.CFI) +
+    geom_vline(xintercept=tbeg1, linetype="dashed", 
+               color = "black", size = 0.3)+
+    geom_vline(xintercept=tstop1, linetype="dashed", 
+               color = "black", size = 0.3)+
+    xlab("Age, d") +
+    ylab("Cumulative Feed Intake, kg") +
+    scale_y_continuous(breaks=seq(0, 360, 40)) +
+    scale_x_continuous(breaks=seq(60, 240, 20)) +
+    ggtitle(paste("Modelling CFI response of", "\nthe pig", ID, "to a single perturbation")) +
+    theme(plot.title = element_text(hjust = .5)) + 
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.line = element_line(colour = "black")
+    ) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold"))
+  dev.off()
+  
+  #DFI data preparation
+  df1 <- data.frame(cbind(Age, ITD))
+  names(df1) <- c("Age.plot", "DFI.plot")
+  df1 <- df1 %>% mutate(Curve = rep("Target_DFI", length(Age)))
+  
+  df2 <- data.frame(cbind(times.ode, DFI.sim))
+  names(df2) <- c("Age.plot", "DFI.plot")
+  df2 <- df2 %>% mutate(Curve = rep("Simu_DFI", length(times.ode)))
+  
+  df <- rbind(df1, df2)
+  df3 <- Data %>% select(Age.plot, DFI.plot)
+  
+  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Simu_DFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  cols.DFI <- c("Target_DFI" = "blue", "Simu_DFI" = "red")
+  typs.DFI <- c("Target_DFI" = "solid", "Simu_DFI" = "solid")
+  size.DFI <- c("Target_DFI" = 1.2, "Simu_DFI" = 2)
+  ggplot(data = df, aes(x = Age.plot, y = DFI.plot)) + 
+    geom_point(data = df3, aes(x = Age, y = DFI.obs), color = "black", shape = 21, size = 4, stroke = 1.1) +
+    geom_line(aes(color = Curve, linetype = Curve, size = Curve)) +
+    scale_color_manual(values = cols.DFI) +
+    scale_linetype_manual(values = typs.DFI) +
+    scale_size_manual(values = size.DFI) +
+    # geom_vline(xintercept=tbeg1, linetype="dashed", 
+    #            color = "black")+
+    # geom_vline(xintercept=tstop1, linetype="dashed", 
+    #            color = "black")+
+    xlab("Age, d") +
+    ylab("Daily Feed Intake, kg/ d") +
+    scale_y_continuous(breaks=seq(0, 8, 1)) +
+    scale_x_continuous(breaks=seq(60, 240, 20)) +
+    ggtitle(paste("Modelling DFI response of", "\nthe pig", ID, "to a single perturbation")) +
+    theme(plot.title = element_text(hjust = .5)) + 
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.line = element_line(colour = "black")
+    ) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold"))
+  dev.off()
+  
+  # #Ratio
+  ratio1 <- data.frame(cbind(Time, Ratio.DFI))
+  names(ratio1) <- c("Age.plot", "Ratio.plot")
+  ratio1 <- ratio1 %>% mutate(Curve = rep("Compen", length(Time)))
+
+  ratio2 <- data.frame(cbind(Time, 1+ onoff*(p1-1)))
+  names(ratio2) <- c("Age.plot", "Ratio.plot")
+  ratio2 <- ratio2 %>% mutate(Curve = rep("Impact", length(Time)))
+  ratio <- rbind(ratio1, ratio2)
+
+  cols.ratio  <- c("Compen" = "blue", "Impact" = "red")
+  types <- c("Compen" = "solid", "Impact" = "dotdash")
+  ggplot(data = ratio, aes(x = Age.plot, y = Ratio.plot)) +
+    geom_hline(yintercept=1, linetype="solid", color = "black", size = 1) +
+    geom_line(aes(color = Curve, linetype = Curve), size = 1.2) +
+    scale_color_manual(values = cols.ratio) +
+    scale_linetype_manual(values = types) +
+    xlab("Age (day)") +
+    ylab("Ratio") +
+    ggtitle(paste("Ratio between actual and target DFI", "\n of the Pig", ID)) +
+    theme(plot.title = element_text(hjust = .5)) +
+    theme_bw()
+  
+  Data1 <- cbind(Age, ITC, ITD, df2$DFI.plot, cf2$CFI.plot, ratio1$Ratio.plot, ratio2$Ratio.plot, CompFI)
+  names(Data1) <- c("Age","ITC", "ITD", "Sim.DFI","Sim.CFI", "Ratio.Compen", "Ratio.Impact", "CompFI")
+  write.csv2(Data1,file="EAAP_Data3.csv",row.names=FALSE)
+
+  #Legend
+  LD <- rbind(AF2, AF3)
+  
+  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Legend", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  cols.LD <- c("Resistance" = "black", "AA" = "blue")
+  type.LD <- c("Resistance" = "solid", "AA" = "dashed")
+  size.LD <- c("Resistance" = 1, "AA" = 1)
+  ggplot(data = LD, aes(x = Age.plot, y = Percent)) + 
+    # geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1)+
+    geom_line(aes(color = Curve, linetype=Curve, size = Curve)) +
+    scale_color_manual(values = cols.LD, labels = c("Target_CFI", "Deviation")) +
+    scale_linetype_manual(values = type.LD, labels = c("Target_CFI", "Deviation"))+
+    scale_size_manual(values = size.LD, labels = c("Target_CFI", "Deviation"))+
+    xlab("Age, d") +
+    ylab("Change in daily feed intake (%)") +
+    expand_limits(y=-10,100)+
+    scale_y_continuous(breaks=seq(-100, 100, 10)) +
+    scale_x_continuous(breaks=seq(60, 240, 20)) +
+    ggtitle(paste("Change in DFI of", "the pig", ID, "\nduring and after a single perturbation")) +
+    theme(plot.title = element_text(hjust = .5)) + 
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.line = element_line(colour = "black")
+    ) +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold"))
+  dev.off()
+  
