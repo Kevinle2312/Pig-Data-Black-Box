@@ -28,10 +28,10 @@
   # Import data file and functions
   #-------------------------------------------------------------------------------
 
-  load("Data income/JRPData_TTC.RData")
-  load("Data income/JRP.DFI.neg.Rdata")
-  load("Data income/JRP.DFI.pos1.Rdata")
-  load("Data income/JRP.DFI.pos2.Rdata")
+  load("Data/JRPData_TTC.RData")
+  load("Data/JRP.DFI.neg.Rdata")
+  load("Data/JRP.DFI.pos1.Rdata")
+  load("Data/JRP.DFI.pos2.Rdata")
   
   source("Package/abcd.R") #functions
 

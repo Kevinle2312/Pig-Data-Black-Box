@@ -20,7 +20,7 @@ setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
 #===============================================================
 
   # Import data to R
-  JRP_NA.0<- read.csv("Data income/RFI_JRP.csv", header =TRUE, sep=",", dec=".",fileEncoding="UTF-8-BOM")
+  JRP_NA.0<- read.csv("Data/RFI_JRP.csv", header =TRUE, sep=",", dec=".",fileEncoding="UTF-8-BOM")
 
   # Replace missing values by NA (not available)
   JRP_NA.0[JRP_NA.0 == '.'] <- NA
@@ -40,5 +40,5 @@ setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
 #===============================================================  
   
   save( JRP_NA.0, JRP_NA,                                 #Step 0: data treatment
-        file = "Data income/JRPData.Rdata")
+        file = "Data/JRPData.Rdata")
 

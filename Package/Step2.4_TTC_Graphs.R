@@ -28,10 +28,10 @@ setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
 
 #load dataset
 source("Package/abcd.R")
-load("Data income/JRPData_TTC.Rdata")
-load("Data income/JRP.DFI.neg.Rdata")
-load("Data income/JRP.DFI.pos1.Rdata")
-load("Data income/JRP.DFI.pos2.Rdata")
+load("Data/JRPData_TTC.Rdata")
+load("Data/JRP.DFI.neg.Rdata")
+load("Data/JRP.DFI.pos1.Rdata")
+load("Data/JRP.DFI.pos2.Rdata")
 
 #Check number of animals in each function type
 #LM function for CFI

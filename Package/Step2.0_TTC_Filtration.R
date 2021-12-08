@@ -29,7 +29,7 @@
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
 #load dataset
-  load("Data income/JRPData.Rdata") #load dataset created in MissingData.step
+  load("Data/JRPData.Rdata") #load dataset created in MissingData.step
   
   source("Package/abcd.R")
   
@@ -174,6 +174,6 @@
   #===============================================================
 
   save(No.NA.Data.1, DFI.neg, DFI.pos1, DFI.pos2, 
-       file = "Data income/JRPData_TTC.RData")
+       file = "Data/JRPData_TTC.RData")
 
   # write.csv(No.NA.Data.1, DFI.neg, DFI.pos1, DFI.pos2, file = "JRP.param.csv")

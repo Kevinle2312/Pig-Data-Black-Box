@@ -25,7 +25,7 @@ setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
 
 #load data after data treatment  
 
-load("Data income/JRPData.Rdata")
+load("Data/JRPData.Rdata")
 
 
 

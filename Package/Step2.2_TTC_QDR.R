@@ -24,7 +24,7 @@
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
 #load dataset
-  load("Data income/JRPData_TTC.Rdata") #load dataset created in MissingData.step
+  load("Data/JRPData_TTC.Rdata") #load dataset created in MissingData.step
   
   source("Package/abcd.R")
   
@@ -275,9 +275,9 @@ DFI.pos1 <- unique(Age.remain.pos1$ANIMAL_ID)
 #===============================================================
 
   save(ITC.param.pos1, Age.remain.pos1, 
-       file = "Data income/JRP.DFI.pos1.RData")
+       file = "Data/JRP.DFI.pos1.RData")
 
   save(No.NA.Data.1, DFI.neg, DFI.pos1, DFI.pos2,
-       file = "Data income/JRPData_TTC.RData")
+       file = "Data/JRPData_TTC.RData")
 
 #DFI.neg <- factor(DFI.neg1, levels = 1:nlevels(DFI.pos2), labels = levels(DFI.pos2))

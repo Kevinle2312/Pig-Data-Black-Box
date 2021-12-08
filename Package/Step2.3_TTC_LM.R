@@ -24,7 +24,7 @@
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
 #load dataset
-  load("Data income/JRPData_TTC.Rdata") #load dataset created in MissingData.step
+  load("Data/JRPData_TTC.Rdata") #load dataset created in MissingData.step
   
   source("Package/abcd.R")
   
@@ -228,5 +228,5 @@ length(unique(ITC.param.neg$ANIMAL_ID)); length(unique(Age.remain.neg$ANIMAL_ID)
   #===============================================================
 
   save(ITC.param.neg, Age.remain.neg,         #Step 2: ITC
-       file = "Data income/JRP.DFI.neg.RData")
+       file = "Data/JRP.DFI.neg.RData")
   

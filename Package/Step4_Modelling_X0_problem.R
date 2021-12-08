@@ -33,12 +33,12 @@
   # Import data file and functions
   #-------------------------------------------------------------------------------
   
-     load("Data income/JRP.Per.detec.RData") #load dataset created in MissingData.step
-     load("Data income/JRPData.Rdata")
-     load("Data income/JRPData_TTC.RData")
-     load("Data income/JRP.DFI.pos1.RData")
-     load("Data income/JRP.DFI.pos2.RData")
-     load("Data income/JRP.DFI.neg.RData")
+     load("Data/JRP.Per.detec.RData") #load dataset created in MissingData.step
+     load("Data/JRPData.Rdata")
+     load("Data/JRPData_TTC.RData")
+     load("Data/JRP.DFI.pos1.RData")
+     load("Data/JRP.DFI.pos2.RData")
+     load("Data/JRP.DFI.neg.RData")
      source("Package/abcd.R") #functions
      source("Package/Step4_functions_X0_problem.R")
      options(digits=3) 

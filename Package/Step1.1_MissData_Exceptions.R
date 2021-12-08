@@ -25,7 +25,7 @@
   
 #load data after data treatment  
   
-  load("Data income/JRPData.Rdata")
+  load("Data/JRPData.Rdata")
   
 
 
@@ -328,6 +328,6 @@
 
       save( JRP_NA.0, JRP_NA,              #Step 0: data treatment
             No.NA.Data.0,                        #Step 1: missing data
-            file = "Data income/JRPData.Rdata")
+            file = "Data/JRPData.Rdata")
 
     
