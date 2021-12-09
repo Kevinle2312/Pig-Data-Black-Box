@@ -19,6 +19,7 @@
   library(ggplot2)
   library(fda)
 
+
 ################################################################
 
 # Set working directory  
@@ -55,6 +56,12 @@
   
   #Order number of Animal_ID
   ID <- unique(as.factor(No.NA.Data.1$ANIMAL_ID))
+
+  #data frame contains all information of the perturbed days
+  dev.df <- data.frame()
+  dev.save <- data.frame()
+  dev.df <- NULL
+  dev.save <- NULL
    
   #===============================================================
   # For loop to run automatically for all animals
@@ -76,6 +83,7 @@
   Age <- Data$Age.plot
   CFI <- Data$CFI.plot
   DFI <- Data$DFI.plot
+    IDs <- Data$ANIMAL_ID
     
   #-------------------------------------------------------------------------------
   # Calulate TTC using abcd function
@@ -228,6 +236,7 @@
     
     #Create the new data frame, remove first row and duplicate the last row
     difp1 <- rbind(dif[-1,], lastrow)
+    difp1$ANIMAL_ID <- rep(i, dim(dif)[1])
   
     #-------------------------------------------------------------------------------
     # Determine the days in which the deviation of CFI from TTC are maximum and minimum 
@@ -294,7 +303,7 @@
 
       #Test if after removing the first week, magnitude of deviation is still larger than 5%; we keep 1st week, otherwise we remove 1st week
       test.data <- filter(difp1, eval_day %in% seq(difp1$eval_day[1] + crit2, normal.day1, by = 0.1))
-      dif.CFI1 <- test.data %>% group_by(dif.CFI) %>% summarise(count = n()) %>% arrange(desc(count)) %>% top_n(2)
+      dif.CFI1 <- test.data %>% group_by(dif.CFI) %>% dplyr::summarise(count = n()) %>% arrange(desc(count)) %>% top_n(2)
       as.numeric(dif.CFI1$dif.CFI)
       crit2 <- ifelse(dif.CFI1$dif.CFI[1] <= -5 && (normal.day1 - (difp1$eval_day[1] + crit2)) >= 5, 0, 7)
     }
@@ -305,14 +314,14 @@
     #deviated ages (which have CFI values < normal range)
     dev.age <- difp1[difp1$dif.CFI < crit1 & difp1$eval_day > eval_day[1] + crit2,]$eval_day
     #data frame contains all information of the perturbed days
-    dev.df <- difp1[difp1$eval_day %in% dev.age,]
-    
+    dev.df <-  difp1[difp1$eval_day %in% dev.age, ]
+
     #-------------------------------------------------------------------------------
     # Extract min , max and start and end points of the deviations
     #-------------------------------------------------------------------------------
     
     # perturbed days when res have maximum values
-    max <- dev.df$eval_day[which(dev.df$maxmin == -2)]
+    max <- dev.df$eval_day[which(dev.df$maxmin == -2)  ]
     
     # values of max
     dif.max <- dif$dif.CFI[dif$eval_day%in%max]
@@ -553,9 +562,15 @@
     points(pertub.table$Min.Day, pertub.table$Min.perc,
            col = "purple", pch=19, cex = 2)
     dev.off()
-    #  
+    # Copy pertubation data for furture calculation
+    if (!is.null(dev.save)){
+      dev.save <- rbind(dev.save, dev.df)
+    } else{
+      dev.save <-  dev.df
+    }
   }
-  
+
+  dev.df <- dev.save
   #-------------------------------------------------------------------------------
   #Save results to Rdata file
   #-------------------------------------------------------------------------------
@@ -564,7 +579,7 @@
        fn.pertub.table,
        fn.res,
        dev.df,
-       file = "Data income/JRP.Per.detec.RData")
+       file = "Data/JRP.Per.detec.RData")
     
   write.csv2(fn.pertub.table, file = "fn.pertub.table.csv")
   
