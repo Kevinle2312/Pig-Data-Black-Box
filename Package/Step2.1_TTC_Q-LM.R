@@ -340,8 +340,8 @@ Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANI
 
 #Add these animals to the group of linear function for CFI
 DFI.neg1 <- c( DFI.neg, unique(ITC.param.p2.neg$ANIMAL_ID))
-DFI.neg <- factor(DFI.neg1)
-DFI.neg <- as.numeric(as.character(DFI.neg))
+DFI.neg <- unique(DFI.neg1)
+# DFI.neg <- as.numeric(as.character(DFI.neg))
 length(DFI.neg)
 
 #==============================================================================
@@ -371,8 +371,8 @@ Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.FT2$ANI
 
 #Add these animals to the group of QDR function for CFI
 DFI.pos11 <- c( DFI.pos1, unique(ITC.param.p2.FT2$ANIMAL_ID))
-DFI.pos1 <- factor(DFI.pos11)
-DFI.pos1 <- as.numeric(as.character(DFI.pos1))
+DFI.pos1 <- unique(DFI.pos11)
+# DFI.pos1 <- as.numeric(as.character(DFI.pos1))
 
 length(DFI.pos1)
 
@@ -389,8 +389,8 @@ Last.pigs <- unique(Last.pigs$ANIMAL_ID)
 
 #Add these animals to the group of QDR function for CFI
 DFI.pos11 <- c( DFI.pos1, Last.pigs)
-DFI.pos1 <- factor(DFI.pos11)
-DFI.pos1 <- as.numeric(as.character(DFI.pos1))
+DFI.pos1 <- unique(DFI.pos11)
+# DFI.pos1 <- as.numeric(as.character(DFI.pos1))
 
 
 #Reset the animals in group of Quadratic-linear function for CFI

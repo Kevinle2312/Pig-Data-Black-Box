@@ -34,6 +34,7 @@
   
   #Order number of Animal_ID
   ID <- DFI.neg; ID
+  class(ID)
   length(ID)
   #Create a new dataframe which will store Data after ITC estimation
   

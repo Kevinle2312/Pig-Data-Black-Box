@@ -263,8 +263,8 @@ Age.remain.pos1 <- subset(Age.remain.pos1, !(ANIMAL_ID %in% ITC.param.p1.neg$ANI
 
 #Add these animals to the group of linear function for CFI
 DFI.neg1 <- c( DFI.neg, unique(ITC.param.p1.neg$ANIMAL_ID))
-DFI.neg <- factor(DFI.neg1)
-DFI.neg <- as.numeric(as.character(DFI.neg))
+DFI.neg <- unique(DFI.neg1)
+# DFI.neg <- as.numeric(as.character(DFI.neg))
 length(DFI.neg)
 
 #Reset the animals in group of Quadratic function for CFI

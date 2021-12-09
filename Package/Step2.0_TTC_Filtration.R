@@ -166,9 +166,9 @@
   DFI.neg <- unique(DFI.neg$ANIMAL_ID); DFI.neg
   DFI.pos1 <- unique(DFI.pos1$ANIMAL_ID); DFI.pos1
   DFI.pos2 <- unique(DFI.pos2$ANIMAL_ID); DFI.pos2
-  DFI.pos1 <- as.numeric(as.character(DFI.pos1))
-  DFI.pos2 <- as.numeric(as.character(DFI.pos2))
-  DFI.neg <- as.numeric(as.character(DFI.neg))
+  # DFI.pos1 <- as.numeric(as.character(DFI.pos1))
+  # DFI.pos2 <- as.numeric(as.character(DFI.pos2))
+  # DFI.neg <- as.numeric(as.character(DFI.neg))
   #===============================================================
   #Save results to Rdata file
   #===============================================================

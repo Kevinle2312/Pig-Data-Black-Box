@@ -53,23 +53,39 @@
  #-------------------------------------------------------------------------------
  # Extract data for animal i
  #-------------------------------------------------------------------------------
-        
-  CFI.obs <- No.NA.Data$CFI.plot
-  DFI.obs <- No.NA.Data$DFI.plot
-  Age <- No.NA.Data$Age.plot
+  IDC <- seq_along(ID)
+  for (idc in IDC){
+  i <- ID[idc]
+    Data <- No.NA.Data.1[No.NA.Data.1$ANIMAL_ID == i,]
+  CFI.obs <- Data$CFI.plot
+  DFI.obs <- Data$DFI.plot
+  Age <- Data$Age.plot
   
   #Difference between actual and target CFI (kg)    
-  res <- fn.res$res
+  res <- fn.res$res[fn.res$ANIMAL_ID == i]
   
   #Information of TTC function
   # TTC.param <- merge(ITC.param.pos2,ITC.param.pos1,ITC.param.neg,by = "ANIMAL_ID")
-  TTC.param <- ITC.param.pos2 %>% full_join(ITC.param.pos1)
-  TTC.param <- TTC.param %>% full_join(ITC.param.neg)
-  FuncType <- TTC.param$FuncType; FuncType
-  Slope <- TTC.param$Slope
+    if (i %in% unique(ITC.param.neg$ANIMAL_ID)) {
+      TTC.param <- ITC.param.pos2[ITC.param.neg$ANIMAL_ID == i,]
+      FuncType <- TTC.param$FuncType; FuncType
+      Slope <- TTC.param$Slope
+
+    } else if (i %in% unique(ITC.param.pos1$ANIMAL_ID)){
+      TTC.param <- ITC.param.pos1[ITC.param.pos1$ANIMAL_ID == i,]
+      FuncType <- TTC.param$FuncType; FuncType
+      Slope <- TTC.param$Slope
+
+    } else {
+      TTC.param <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
+      FuncType <- TTC.param$FuncType; FuncType
+      Slope <- TTC.param$Slope
+
+    }
+
   
   #Magnitude of the perturbation
-  magnitude <- fn.res %>% filter(Age >= fn.pertub.table$Start & Age <= fn.pertub.table$End)
+  magnitude <- fn.res %>% filter(Age >= fn.pertub.table$Start[fn.pertub.table$ANIMAL_ID == i] & Age <= fn.pertub.table$End[fn.pertub.table$ANIMAL_ID == i])
   # magnitude   = res.data %>% filter(Age >= pertub.table$Start[1] & Age <= pertub.table$End[1])
   magnitude <- magnitude %>% filter(res == min(magnitude$res))
   
@@ -80,12 +96,12 @@
   #-------------------------------------------------------------------------------
   
   if(FuncType == "LM"){
-    param.i <- TTC.param[, 6:7]
+    param.i <- TTC.param[, 4:5]
     ITC <- pred.abcd.0(param.i, Age)[[1]]
     ITD <- rep(param.i[2], length(Age))
     
   } else if(FuncType == "QDR"){
-    param.i <- TTC.param[, 6:8]
+    param.i <- TTC.param[, 5:7]
     ITC <- pred.abcd.1(param.i, Age)[[1]]
     ITD <- pred.abcd.1(param.i, Age)[[2]]
     
@@ -131,7 +147,7 @@ if(FuncType == "LM"){
   ##-----------------------------
   ## initial values and times
   ##-----------------------------
-  tbeg1 <- fn.pertub.table$Start # tbeg1 corresponds to the start point
+  tbeg1 <- fn.pertub.table$Start[fn.pertub.table$ANIMAL_ID == i] # tbeg1 corresponds to the start point
   tstop1 <- magnitude$Age
   p1 <- 0.1 #because we modified negative impact of perturbation as (p1 -1), the smaller p1 is the more severe impact is
   max.compFI1 <- 4
@@ -151,7 +167,7 @@ if(FuncType == "LM"){
   ## solve the model
   ##-----------------------------
   
-  yout <- ode(as.numeric(unlist(yinit)),
+  yout <- ode(y = yinit,
               times = times.ode,
               func = ODE.CFI.0,
               parms = param,
@@ -199,7 +215,7 @@ if(FuncType == "LM"){
   ## solve the model
   ##-----------------------------
   
-  yout <- ode(as.numeric(unlist(yinit)),
+  yout <- ode(y = yinit,
               times = times.ode,
               func = ODE.CFI.optim.0,
               parms = par.init,
@@ -238,7 +254,7 @@ if(FuncType == "QDR"){
     ##-----------------------------
     ## initial values and times
     ##-----------------------------
-    tbeg1 <- fn.pertub.table$Start[1]
+    tbeg1 <- fn.pertub.table$Start[1][fn.pertub.table$ANIMAL_ID == i]
     # tbeg1       = pertub.table$Start # tbeg1 corresponds to the start point
     tstop1 <- magnitude$Age
     p1 <- 0.3 #because we modified negative impact of perturbation as (p1 -1), the smaller p1 is the more severe impact is
@@ -261,7 +277,7 @@ if(FuncType == "QDR"){
     ## solve the model
     ##-----------------------------
     
-    yout <- ode(y= as.numeric(unlist(yinit)),
+    yout <- ode(y = yinit,
                 times = times.ode,
                 func = ODE.CFI.1,
                 parms = param,
@@ -309,7 +325,7 @@ if(FuncType == "QDR"){
     ## solve the model
     ##-----------------------------
     
-    yout <- ode(y= as.numeric(unlist(yinit)),
+    yout <- ode(y = yinit,
                 times = times.ode,
                 func = ODE.CFI.optim.1,
                 parms = par.init,
@@ -349,7 +365,7 @@ if(FuncType == "QLM"){
   ## initial values and times
   ##-----------------------------
   
-  tbeg1 <- fn.pertub.table$Start # tbeg1 corresponds to the start point
+  tbeg1 <- fn.pertub.table$Start[fn.pertub.table$ANIMAL_ID == i] # tbeg1 corresponds to the start point
   tstop1 <- magnitude$Age
   p1 <- 0.3 #because we modified negative impact of perturbation as (p1 -1), the smaller p1 is the more severe impact is
   max.compFI1 <- 7
@@ -359,6 +375,7 @@ if(FuncType == "QLM"){
   Xs <- TTC.param$Xs
 
   yinit <- c(CumFI = ITC[1]) #state
+  yinit <- as.numeric(unlist(yinit))
   times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
 
  ##-----------------------------
@@ -371,7 +388,7 @@ if(FuncType == "QLM"){
  ## solve the model
  ##-----------------------------
 
-  yout <- ode(y= as.numeric(unlist(yinit)),
+  yout <- ode(y = yinit,
               times = times.ode,
               func = ODE.CFI.2,
               parms = param,
@@ -422,7 +439,7 @@ if(FuncType == "QLM"){
  ## solve the model
  ##-----------------------------
 
- yout <- ode(y= as.numeric(unlist(yinit)),
+ yout <- ode(y = yinit,
              times = times.ode,
              func = ODE.CFI.optim.2,
              parms = par.init,
@@ -707,5 +724,6 @@ if(FuncType == "QLM"){
     ) +
     theme(axis.text=element_text(size=12),
           axis.title=element_text(size=14,face="bold"))
+  }
   dev.off()
   

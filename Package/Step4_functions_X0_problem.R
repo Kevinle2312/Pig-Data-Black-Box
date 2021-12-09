@@ -177,7 +177,7 @@ ODE.CFI.obj.1 <- function(P, data){
   ITC.DFI <- ind1*(b+2*c*x) + (1 - ind1)*(b+2*c*(Xs))
   #
   onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
-  CompFI <- (1-CumFI/ITC.CFI)*max.compFI1
+  CompFI <- (1-State/ITC.CFI)*max.compFI1
   #
   dCumFI <- (onoff*(p1-1) + CompFI + 1)*ITC.DFI
   #
