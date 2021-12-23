@@ -40,7 +40,6 @@
      load("Data/JRP.DFI.pos2.RData")
      load("Data/JRP.DFI.neg.RData")
      source("Package/Functions.R") #functions
-     source("Package/Step4_functions_X0_problem.R")
      options(digits=3) 
 
 #===============================================================
