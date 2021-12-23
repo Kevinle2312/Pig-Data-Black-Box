@@ -34,7 +34,7 @@
   load("Data/JRP.DFI.pos1.Rdata")
   load("Data/JRP.DFI.pos2.Rdata")
   
-  source("Package/abcd.R") #functions
+  source("Package/Functions.R") #functions
 
   #===============================================================
   # DATA PREPARATION
@@ -464,11 +464,11 @@
     #if it decreases less than 5% from the TTC, we do not consider it as a perturbation
     A <- data.frame()
     for(ii in 1:dim(pertub.table)[1]){
-        A1 <- dif %>% 
-            filter(eval_day %in% as.numeric(seq(pertub.table$Start[ii], pertub.table$End[ii], by = dexima.i))) %>%
-            select(eval_day, dif.CFI) %>%
+        A1 <- dif %>%
+            filter(eval_day %in% as.character(seq(pertub.table$Start[ii], pertub.table$End[ii], by = dexima.i))) %>%
+            # select(eval_day, dif.CFI) %>%
             arrange(dif.CFI)
-        A1 <- A1[1,]
+        A1 <- A1[1,1:2]
         A <- rbind(A, A1)
     }
     names(A) <- c("Min.Day", "Min.perc")

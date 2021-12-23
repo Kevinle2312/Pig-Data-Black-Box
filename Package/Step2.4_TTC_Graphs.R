@@ -27,7 +27,7 @@ library(nls2)
 setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
 
 #load dataset
-source("Package/abcd.R")
+source("Package/Functions.R")
 load("Data/JRPData_TTC.Rdata")
 load("Data/JRP.DFI.neg.Rdata")
 load("Data/JRP.DFI.pos1.Rdata")

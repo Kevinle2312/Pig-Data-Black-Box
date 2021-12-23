@@ -39,7 +39,7 @@
      load("Data/JRP.DFI.pos1.RData")
      load("Data/JRP.DFI.pos2.RData")
      load("Data/JRP.DFI.neg.RData")
-     source("Package/abcd.R") #functions
+     source("Package/Functions.R") #functions
      source("Package/Step4_functions_X0_problem.R")
      options(digits=3) 
 
@@ -56,7 +56,7 @@
   IDC <- seq_along(ID)
   for (idc in IDC){
   i <- ID[idc]
-    Data <- No.NA.Data.1[No.NA.Data.1$ANIMAL_ID == i,]
+  Data <- No.NA.Data.1[No.NA.Data.1$ANIMAL_ID == i,]
   CFI.obs <- Data$CFI.plot
   DFI.obs <- Data$DFI.plot
   Age <- Data$Age.plot
@@ -67,7 +67,7 @@
   #Information of TTC function
   # TTC.param <- merge(ITC.param.pos2,ITC.param.pos1,ITC.param.neg,by = "ANIMAL_ID")
     if (i %in% unique(ITC.param.neg$ANIMAL_ID)) {
-      TTC.param <- ITC.param.pos2[ITC.param.neg$ANIMAL_ID == i,]
+      TTC.param <- ITC.param.neg[ITC.param.neg$ANIMAL_ID == i,]
       FuncType <- TTC.param$FuncType; FuncType
       Slope <- TTC.param$Slope
 
@@ -96,17 +96,17 @@
   #-------------------------------------------------------------------------------
   
   if(FuncType == "LM"){
-    param.i <- TTC.param[, 4:5]
+    param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 4:5])
     ITC <- pred.abcd.0(param.i, Age)[[1]]
     ITD <- rep(param.i[2], length(Age))
     
   } else if(FuncType == "QDR"){
-    param.i <- TTC.param[, 5:7]
+    param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 5:7])
     ITC <- pred.abcd.1(param.i, Age)[[1]]
     ITD <- pred.abcd.1(param.i, Age)[[2]]
     
   } else{
-    param.i <- TTC.param[, 6:8]
+    param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 6:8])
     Xs <- TTC.param$Xs
     ITC <- pred.abcd.2(param.i, Age)[[1]]
     ITD <- pred.abcd.2(param.i, Age)[[2]]
@@ -155,13 +155,14 @@ if(FuncType == "LM"){
   b <- TTC.param$b
   
   yinit <- c(CumFI = ITC[1]) #state
+  CumFI <- ITC[1]
   times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
   
   ##-----------------------------
   ## parameters
   ##-----------------------------
   
-  param <- c(p1, max.compFI1, tbeg1, tstop1, a, b)
+  param <- c(p1, max.compFI1, tbeg1, tstop1, a, b,CumFI)
   
   ##-----------------------------
   ## solve the model
@@ -202,14 +203,14 @@ if(FuncType == "LM"){
   ## initial values and times
   ##-----------------------------
   
-  yinit <- c(CumFI = ITC[1]) #state
+  # yinit <- c(CumFI = ITC[1]) #state
   times.ode <- seq(from = Age[1], to = Age[length(Age)], by = 1)
   
   ##-----------------------------
   ## parameters
   ##-----------------------------
   
-  par.init <- c(p1, max.compFI1, tbeg1, tstop1)
+  par.init <- c(p1, max.compFI1, tbeg1, tstop1, a, b, CumFI)
   
   ##-----------------------------
   ## solve the model
@@ -223,19 +224,20 @@ if(FuncType == "LM"){
               rtol = 1e-10)
   
   summary(yout)
-  
+  # par.init <- c(p1, max.compFI1, tbeg1, tstop1)
   
   ##-----------------------------
   #  run the optimization with NLS2
   ##-----------------------------
   Data.xy <- Data
   times <- Data.xy$Age.plot
-  ODE.CFI.obj.0(par.init, Data.xy)
+  P <- ODE.CFI.obj.0(par.init, Data.xy)
+
   
   #Estimate parameters by Optim and the best initial parameters
   optim.res <- optim(par.init, ODE.CFI.obj.0, hessian = TRUE)
   
-  P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4])
+  P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4],optim.res$par[5],optim.res$par[6],optim.res$par[7])
   P.optim
   
   ODE.CFI.obj.0(P.optim, Data.xy)
@@ -271,7 +273,7 @@ if(FuncType == "QDR"){
     ## parameters
     ##-----------------------------
     
-    param <- c(p1, max.compFI1, tbeg1, tstop1, a, b, c)
+    param <- c(p1, max.compFI1, tbeg1, tstop1, a, b, c,CumFI)
     
     ##-----------------------------
     ## solve the model
@@ -319,7 +321,7 @@ if(FuncType == "QDR"){
     ## parameters
     ##-----------------------------
     
-    par.init <- c(p1, max.compFI1, tbeg1, tstop1)
+    # par.init <- c(p1, max.compFI1, tbeg1, tstop1)
     
     ##-----------------------------
     ## solve the model
@@ -345,7 +347,7 @@ if(FuncType == "QDR"){
     #Estimate parameters by Optim and the best initial parameters
     optim.res <- optim(par.init, ODE.CFI.obj.1, hessian = TRUE)
     
-    P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4])
+    P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4],a,b,c,CumFI)
     P.optim
     
     ODE.CFI.obj.1(P.optim, Data.xy)
@@ -376,13 +378,14 @@ if(FuncType == "QLM"){
 
   yinit <- c(CumFI = ITC[1]) #state
   yinit <- as.numeric(unlist(yinit))
+  CumFI <- as.numeric(ITC[1])
   times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
 
  ##-----------------------------
  ## parameters
  ##-----------------------------
 
- param <- c(p1, max.compFI1, tbeg1, tstop1, a, b, c, Xs)
+ param <- c(p1, max.compFI1, tbeg1, tstop1, a, b, c, Xs, CumFI)
 
  ##-----------------------------
  ## solve the model
@@ -433,7 +436,7 @@ if(FuncType == "QLM"){
  ## parameters
  ##-----------------------------
 
- par.init <- c(p1, max.compFI1, tbeg1, tstop1)
+ # par.init <- c(p1, max.compFI1, tbeg1, tstop1)
 
  ##-----------------------------
  ## solve the model
@@ -459,7 +462,7 @@ if(FuncType == "QLM"){
   #Estimate parameters by Optim and the best initial parameters
   optim.res <- optim(par.init, ODE.CFI.obj.2, hessian = TRUE)
 
-  P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4])
+  P.optim <- c(optim.res$par[1], optim.res$par[2], optim.res$par[3], optim.res$par[4], a, b, c, Xs, CumFI)
   P.optim
 
   ODE.CFI.obj.2(P.optim, Data.xy)
@@ -549,25 +552,24 @@ if(FuncType == "QLM"){
   #ggplot2
   #Compensatory feed intake and perturbation effect
   AF1 <- data.frame(cbind(Time, CompFI*100))
-  names(AF1) <- c("Age.plot", "Percent")
+  names(AF1) <- c("Age.plot.new", "Percent")
   AF1 <- AF1 %>% mutate(Curve = rep("Resilience", length(Time)))
   
   AF2 <- data.frame(cbind(Time, (0- onoff*(1-p1))*100))
-  names(AF2) <- c("Age.plot", "Percent")
+  names(AF2) <- c("Age.plot.new", "Percent")
   AF2 <- AF2 %>% mutate(Curve = rep("Resistance", length(Time)))
   
-  AF3 <- data.frame(cbind(Time, rep(0, length(Time))))
-  names(AF3) <- c("Age.plot", "Percent")
-  AF3 <- AF3 %>% mutate(Curve = rep("AA", length(Time)))
+  # AF3 <- data.frame(cbind(Time, rep(0, length(Time))))
+  # names(AF3) <- c("Age.plot.new", "Percent")
+  # AF3 <- AF3 %>% mutate(Curve = rep("AA", length(Time)))
   
-  AF <- rbind(AF1, AF2, AF3)
-  
-  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Ratio", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  AF <- rbind(AF1, AF2)
+  tiff(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Ratio", ".png"), width = 6000, height = 3500, units = "px", res=600)
   cols.CFI <- c("Resilience" = "green", "Resistance" = "purple", "AA" = "blue")
   type.CFI <- c("Resilience" = "solid", "Resistance" = "solid", "AA" = "dashed")
   size.CFI <- c("Resilience" = 1.3, "Resistance" = 2.5, "AA" = 1)
-  ggplot(data = AF, aes(x = Age.plot, y = Percent)) + 
-    # geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1)+
+  ggplot(data = AF, aes(x = Age.plot.new, y = Percent)) +
+    geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1)+
     geom_line(aes(color = Curve, linetype=Curve, size = Curve)) +
     scale_color_manual(values = cols.CFI, labels = c("Target", "Resilience", "Resistance")) +
     scale_linetype_manual(values = type.CFI, labels = c("Target", "Resilience", "Resistance"))+
@@ -600,7 +602,7 @@ if(FuncType == "QLM"){
   cf <- rbind(cf1, cf2)
   cf3 <- Data %>% select(Age.plot, CFI.plot)
   
-  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Simu_CFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  tiff(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Simu_CFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
   cols.CFI <- c("Target_CFI" = "blue", "Simu_CFI" = "red")
   typs.CFI <- c("Target_CFI" = "solid", "Simu_CFI" = "solid")
   size.CFI <- c("Target_CFI" = 1, "Simu_CFI" = 1.8)
@@ -641,7 +643,7 @@ if(FuncType == "QLM"){
   df <- rbind(df1, df2)
   df3 <- Data %>% select(Age.plot, DFI.plot)
   
-  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Simu_DFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  tiff(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Simu_DFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
   cols.DFI <- c("Target_DFI" = "blue", "Simu_DFI" = "red")
   typs.DFI <- c("Target_DFI" = "solid", "Simu_DFI" = "solid")
   size.DFI <- c("Target_DFI" = 1.2, "Simu_DFI" = 2)
@@ -700,7 +702,7 @@ if(FuncType == "QLM"){
   #Legend
   LD <- rbind(AF2, AF3)
   
-  tiff(file = paste0("Graphs/Step4_graphs", Data$ANIMAL_ID, ".", "Legend", ".png"), width = 6000, height = 3500, units = "px", res=600)
+  tiff(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Legend", ".png"), width = 6000, height = 3500, units = "px", res=600)
   cols.LD <- c("Resistance" = "black", "AA" = "blue")
   type.LD <- c("Resistance" = "solid", "AA" = "dashed")
   size.LD <- c("Resistance" = 1, "AA" = 1)

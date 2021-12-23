@@ -6,7 +6,7 @@
 ##################################################################
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
-  dev.off() #To close all graphs
+  # dev.off() #To close all graphs
 
 #-------------------------------------------------------------------------------
 # Packages needed for estimaton of Ideal trajectory - nonlinear regression

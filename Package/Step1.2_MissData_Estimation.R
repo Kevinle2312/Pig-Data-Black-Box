@@ -148,7 +148,7 @@ setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
     P.dfil <- list() #parameters of the linear function of DFI
     FI.missl <- list()
     Corr.datal <- list()
-    Res.RSS <- list()
+    Res.RSS.X <- list()
     
     #----------------------------------------------------
     # 3. While loop
@@ -347,7 +347,8 @@ setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
     ######################################################################
       
       #RSS and delta
-      Res.RSS[[k]] <- as.data.frame(c(res$value,delta) , row.names = c("RSS", "Delta"))
+      Res.RSS.X[[k]] <- as.data.frame(c(res$value,delta) , row.names = c("RSS", "Delta"))
+      Res.RSS <- Res.RSS.X[[k]]
       colnames(Res.RSS) <- "Results"
       # 
       
