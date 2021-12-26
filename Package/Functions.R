@@ -285,110 +285,110 @@ pred.abcd.2 <- function(pr,age){
 # In case LINEAR function is used for Target CFI
 #------------------------------------------------
 
-#Function to estimate parameters
-ODE.CFI.optim.0 <- function(Time, State, Pars) {
-  #
-  p1 <- Pars[1]
-  max.compFI1 <- Pars[2]
-  tbeg1 <- Pars[3]
-  tstop1 <- Pars[4]
-  
-  #
-  with(as.list(c(State, Pars)), {
-    # 
-    x <- Time
-    #
-    ITC.CFI <- a +b*x  #Target CFI
-    ITC.DFI <- b       #Target DFI
-    #
-    onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
-    CompFI <- (1-CumFI/ITC.CFI)*max.compFI1
-    #
-    dCumFI <- (onoff*(p1-1) + CompFI + 1)*ITC.DFI
-    #
-    return(list(dCumFI))
-  })
-}
-
-#Objective function
-ODE.CFI.obj.0 <- function(P, data){
-  data <- Data.xy
-  f <- ode(yinit, times, ODE.CFI.optim.0, P)
-  optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
-  return (optim.f)
-}
-
-#--------------------------------------------------
-# In case QUADRATIC function is used for Target CFI
-#--------------------------------------------------
-
-#Function to estimate parameters
-ODE.CFI.optim.1 <- function(Time, State, Pars) {
-  #
-  p1 <- Pars[1]
-  max.compFI1 <- Pars[2]
-  tbeg1 <- Pars[3]
-  tstop1 <- Pars[4]
-
-  #
-  with(as.list(c(State, Pars)), {
-    # 
-    x <- Time
-    #
-    ITC.CFI <- a + b*x + c*x^2  #Target CFI
-    ITC.DFI <- b+2*c*x          #Target DFI
-    #
-    onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
-    CompFI <- (ITC.CFI/CumFI-1)*max.compFI1
-    #
-    dCumFI <- (onoff*(p1-1) + CompFI +1)*ITC.DFI
-    #
-    return(list(dCumFI))
-  })
-}
-
-#Objective function
-ODE.CFI.obj.1 <- function(P, data){
-  data <- Data.xy
-  f <- ode(yinit, times, ODE.CFI.optim.1, P)
-  optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
-  return (optim.f)
-}
-
-#-------------------------------------------------------------
-# In case the QUADRATIC-LINEAR function is used for Target CFI
-#-------------------------------------------------------------
-
-#Function to estimate parameters
-ODE.CFI.optim.2 <- function(Time, State, Pars) {
-  #
-  p1 <- Pars[1]
-  max.compFI1 <- Pars[2]
-  tbeg1 <- Pars[3]
-  tstop1 <- Pars[4]
-
-  #
-  with(as.list(c(State, Pars)), {
-    # 
-    x <- Time
-    ind1 <- as.numeric(x < Xs)
-    #
-    ITC.CFI <- ind1*(a+b*x+c*x^2)+(1-ind1)*((a+b*(Xs)+c*(Xs)^2)+(b+2*c*(Xs))*(x-(Xs)))  #Target CFI
-    ITC.DFI <- ind1*(b+2*c*x) + (1 - ind1)*(b+2*c*(Xs))                                 #Target DFI
-    #
-    onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
-    CompFI <- (1-CumFI/ITC.CFI)*max.compFI1
-    #
-    dCumFI <- (onoff*(p1-1) + CompFI + 1)*ITC.DFI
-    #
-    return(list(dCumFI))
-  })
-}
-
-#  objective function
-ODE.CFI.obj.2 <- function(P, data){
-  data <- Data.xy
-  f <- ode(yinit, times, ODE.CFI.optim.2, P)
-  optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
-  return (optim.f)
-}
+# #Function to estimate parameters
+# ODE.CFI.optim.0 <- function(Time, State, Pars) {
+#   #
+#   p1 <- Pars[1]
+#   max.compFI1 <- Pars[2]
+#   tbeg1 <- Pars[3]
+#   tstop1 <- Pars[4]
+#
+#   #
+#   with(as.list(c(State, Pars)), {
+#     #
+#     x <- Time
+#     #
+#     ITC.CFI <- a +b*x  #Target CFI
+#     ITC.DFI <- b       #Target DFI
+#     #
+#     onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
+#     CompFI <- (1-CumFI/ITC.CFI)*max.compFI1
+#     #
+#     dCumFI <- (onoff*(p1-1) + CompFI + 1)*ITC.DFI
+#     #
+#     return(list(dCumFI))
+#   })
+# }
+#
+# #Objective function
+# ODE.CFI.obj.0 <- function(P, data){
+#   data <- Data.xy
+#   f <- ode(yinit, times, ODE.CFI.optim.0, P)
+#   optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
+#   return (optim.f)
+# }
+#
+# #--------------------------------------------------
+# # In case QUADRATIC function is used for Target CFI
+# #--------------------------------------------------
+#
+# #Function to estimate parameters
+# ODE.CFI.optim.1 <- function(Time, State, Pars) {
+#   #
+#   p1 <- Pars[1]
+#   max.compFI1 <- Pars[2]
+#   tbeg1 <- Pars[3]
+#   tstop1 <- Pars[4]
+#
+#   #
+#   with(as.list(c(State, Pars)), {
+#     #
+#     x <- Time
+#     #
+#     ITC.CFI <- a + b*x + c*x^2  #Target CFI
+#     ITC.DFI <- b+2*c*x          #Target DFI
+#     #
+#     onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
+#     CompFI <- (ITC.CFI/CumFI-1)*max.compFI1
+#     #
+#     dCumFI <- (onoff*(p1-1) + CompFI +1)*ITC.DFI
+#     #
+#     return(list(dCumFI))
+#   })
+# }
+#
+# #Objective function
+# ODE.CFI.obj.1 <- function(P, data){
+#   data <- Data.xy
+#   f <- ode(yinit, times, ODE.CFI.optim.1, P)
+#   optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
+#   return (optim.f)
+# }
+#
+# #-------------------------------------------------------------
+# # In case the QUADRATIC-LINEAR function is used for Target CFI
+# #-------------------------------------------------------------
+#
+# #Function to estimate parameters
+# ODE.CFI.optim.2 <- function(Time, State, Pars) {
+#   #
+#   p1 <- Pars[1]
+#   max.compFI1 <- Pars[2]
+#   tbeg1 <- Pars[3]
+#   tstop1 <- Pars[4]
+#
+#   #
+#   with(as.list(c(State, Pars)), {
+#     #
+#     x <- Time
+#     ind1 <- as.numeric(x < Xs)
+#     #
+#     ITC.CFI <- ind1*(a+b*x+c*x^2)+(1-ind1)*((a+b*(Xs)+c*(Xs)^2)+(b+2*c*(Xs))*(x-(Xs)))  #Target CFI
+#     ITC.DFI <- ind1*(b+2*c*x) + (1 - ind1)*(b+2*c*(Xs))                                 #Target DFI
+#     #
+#     onoff <- ifelse(Time>tbeg1 & Time<tstop1, 1, 0)
+#     CompFI <- (1-CumFI/ITC.CFI)*max.compFI1
+#     #
+#     dCumFI <- (onoff*(p1-1) + CompFI + 1)*ITC.DFI
+#     #
+#     return(list(dCumFI))
+#   })
+# }
+#
+# #  objective function
+# ODE.CFI.obj.2 <- function(P, data){
+#   data <- Data.xy
+#   f <- ode(yinit, times, ODE.CFI.optim.2, P)
+#   optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
+#   return (optim.f)
+# }
