@@ -465,7 +465,7 @@
     A <- data.frame()
     for(ii in 1:dim(pertub.table)[1]){
         A1 <- dif %>%
-            filter(eval_day %in% as.character(seq(pertub.table$Start[ii], pertub.table$End[ii], by = dexima.i))) %>%
+            filter(eval_day %in% as.numeric(seq(pertub.table$Start[ii], pertub.table$End[ii], by = dexima.i))) %>%
             # select(eval_day, dif.CFI) %>%
             arrange(dif.CFI)
         A1 <- A1[1,1:2]
