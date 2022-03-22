@@ -218,10 +218,12 @@
     ITC.param.neg <- rbind(ITC.param.neg , param.2 )
     
   } # end FOR loop
-  
-#Check number of animals in this function type
-#LM function for CFI
-length(unique(ITC.param.neg$ANIMAL_ID)); length(unique(Age.remain.neg$ANIMAL_ID))
+  # Reset all FuncType to "LM"
+  ITC.param.neg$FuncType <- "LM"
+
+  #Check number of animals in this function type
+  #LM function for CFI
+  length(unique(ITC.param.neg$ANIMAL_ID)); length(unique(Age.remain.neg$ANIMAL_ID))
   
   
   #===============================================================

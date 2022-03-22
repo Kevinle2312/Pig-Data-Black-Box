@@ -598,7 +598,7 @@ rm(list=ls()[! ls() %in% c("No.NA.Data")])
 # DATA PREPARATION
 #====================
   #Load needed functions
-  source("Functions.R")
+  source("Package/Functions.R")
 
   #Order number of Animal_ID
   ID <- unique(as.factor(No.NA.Data$ANIMAL_ID))
@@ -720,10 +720,10 @@ Parameters a and b are re-parametrized to:
 ```{r echo=T, results='hide'}
 if(FuncType == "LM"){
   #Remove unneccesary data
-    rm(list=ls()[! ls() %in% c("ID","Data", "FuncType", "x", "Y", "Z", "Data.xy")])
+    rm(list=ls()[! ls() %in% c("ID", "Data", "FuncType", "x", "Y", "Z", "Data.xy")])
     
     #load needed functions
-    source("Functions.R") 
+    source("Package/Functions.R")
     
     xlast <- x[length(x)] # last day of observation
     #Provide initial parameteres for the linear function
@@ -861,10 +861,10 @@ Parameters a and b are re-parametrized to:
 if(FuncType == "QDR"){
     
     #Remove unneccesary data
-    rm(list=ls()[! ls() %in% c("ID","Data", "FuncType", "x", "Y", "Z", "Data.xy")])
+    rm(list=ls()[! ls() %in% c("ID", "Data", "FuncType", "x", "Y", "Z", "Data.xy")])
     
     # Load needed functions
-    source("Functions.R")
+    source("Package/Functions.R")
   
     xlast <- x[length(x)] #last day of observation
     #Initial parameteres for the quadratic function
@@ -1020,11 +1020,11 @@ if(FuncType == "QLM"){
     
  #Remove uneccesary data
   rm(list=ls()[! ls() %in%
-                 c("ID", "Data", "FuncType", "x", "Y", "Z", 
+                 c("ID", "Data", "FuncType", "x", "Y", "Z",
                    "Data.xy", "X0.0", "Xlast", "par_init", "st1", "TTC.param")])
   
   # Load needed functions
-  source("Functions.R")
+  source("Package/Functions.R")
     
  #--------------------------------------------
  # Create empty lists to store data after loop
@@ -1224,10 +1224,10 @@ if(TTC.param$FuncType == "QLM" &&
      TTC.param$Xs >= ((Data.remain$Age[length(Data.remain$Age)] - Data.remain$Age[1])*0.9 + Data.remain$Age[1])){
     
     #Remove uneccesary data
-    rm(list=ls()[! ls() %in% c("ID","Data", "TTC.param")])
+    rm(list=ls()[! ls() %in% c("ID", "Data", "TTC.param")])
   
     # Load needed functions
-    source("Functions.R")
+    source("Package/Functions.R")
     
     ####### Create data frame of x (Age) and y (CFI) ########
     x <- as.numeric(Data$Age.plot)
@@ -1382,10 +1382,10 @@ A linear function is replaced the quadratic-linear function
 ```{r include = FALSE}
 if(TTC.param$FuncType == "QLM" && TTC.param$Slope == -1){
   #Remove uneccesary data
-    rm(list=ls()[! ls() %in% c("ID","Data")])
+    rm(list=ls()[! ls() %in% c("ID", "Data")])
   
     # Load needed functions
-    source("Functions.R")
+    source("Package/Functions.R")
     
     ####### Create data frame of x (Age) and y (CFI) ########
     x <- as.numeric(Data$Age.plot)
@@ -1521,12 +1521,12 @@ if(TTC.param$FuncType == "QDR" && TTC.param$Slope == -1){
      # A linear function is replaced the quadratic-linear function  
      #-------------------------------------------------------------------------------
      # Remove uneccesary data
-     rm(list=ls()[! ls() %in% c("DON_NA.0", "DON_NA", "No.NA.Data", "ID","i",
-                                "idc","Data", "TTC.param", "ITC.param.pos2",
+     rm(list=ls()[! ls() %in% c("DON_NA.0", "DON_NA", "No.NA.Data", "ID", "i",
+                                "idc", "Data", "TTC.param", "ITC.param.pos2",
                                 "ITC.param.pos1", "ITC.param.neg", "Data.remain")])
   
      # Load needed functions
-     source("Functions.R")
+     source("Package/Functions.R")
      
      ####### Create data frame of x (Age) and y (CFI) ########
      x <- as.numeric(Data$Age.plot)
@@ -1666,7 +1666,7 @@ rm(list=ls()[! ls() %in% c("ID", "Data", "Data.remain", "param.2", "TTC.param")]
 
 ```{r echo = TRUE}
 # Load needed functions
-source("Functions.R")
+source("Package/Functions.R")
 
 #Extract Age, DFI and CFI 
   Age <- Data$Age.plot
@@ -2299,7 +2299,7 @@ Our model contains 4 parameters to quantify the impact of a perturbation on the 
                             "res.data")])
 
 #Load needed functions
-source("Functions.R")
+source("Package/Functions.R")
 options(digits=3) 
  
 #===============================================================

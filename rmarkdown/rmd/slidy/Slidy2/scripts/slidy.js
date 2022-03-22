@@ -65,8 +65,8 @@ var w3c_slidy = {
 
   size_index: 0,
   size_adjustment: 0,
-  sizes:  new Array("10pt", "12pt", "14pt", "16pt", "18pt", "20pt",
-                    "22pt", "24pt", "26pt", "28pt", "30pt", "32pt"),
+  sizes:  ["10pt", "12pt", "14pt", "16pt", "18pt", "20pt",
+                    "22pt", "24pt", "26pt", "28pt", "30pt", "32pt"],
 
   // needed for efficient resizing
   last_width: 0,
@@ -1091,7 +1091,7 @@ var w3c_slidy = {
 
 // return new array of all slides
   collect_slides: function () {
-    var slides = new Array();
+    var slides = [];
     var divs = document.body.getElementsByTagName("div");
 
     for (var i = 0; i < divs.length; ++i)
@@ -1124,7 +1124,7 @@ var w3c_slidy = {
 
   // return new array of all <div class="handout">
   collect_notes: function () {
-    var notes = new Array();
+    var notes = [];
     var divs = document.body.getElementsByTagName("div");
 
     for (var i = 0; i < divs.length; ++i)
@@ -1147,7 +1147,7 @@ var w3c_slidy = {
   // return new array of all <div class="background">
   // including named backgrounds e.g. class="background titlepage"
   collect_backgrounds: function () {
-    var backgrounds = new Array();
+    var backgrounds = [];
     var divs = document.body.getElementsByTagName("div");
 
     for (var i = 0; i < divs.length; ++i)
@@ -1437,7 +1437,7 @@ var w3c_slidy = {
       {
         return 0;   // no luck!
       }
-    };
+    }
 
     for (i = 0; i < slides.length; ++i)
     {
@@ -2322,7 +2322,7 @@ var w3c_slidy = {
   okay_for_incremental: function (name) {
     if (!this.incremental_elements)
     {
-      var inclist = new Array();
+      var inclist = [];
       inclist["p"] = true;
       inclist["pre"] = true;
       inclist["li"] = true;
