@@ -576,7 +576,7 @@ SlideDeck.prototype.updateSlides_ = function(opt_dontPush) {
         this.updateSlideClass_(i);
         break;
     }
-  };
+  }
 
   this.triggerSlideEvent('slideleave', this.prevSlide_);
   this.triggerSlideEvent('slideenter', curSlide);
@@ -598,7 +598,7 @@ SlideDeck.prototype.updateSlides_ = function(opt_dontPush) {
 
   if (document.body.classList.contains('overview')) {
     this.focusOverview_();
-    return;
+
   }
 
 };

@@ -549,7 +549,7 @@ function Hammer(element, options, undefined)
             while(node !== null){
                 if(node === parent){
                     return true;
-                };
+                }
                 node = node.parentNode;
             }
         }

@@ -312,95 +312,95 @@
   
   } # end FOR loop
   
-#Check number of animals in this function type  
-#Quadratic-linear function for CFI
-length(unique(ITC.param.pos2$ANIMAL_ID)); length(unique(Age.remain.pos2$ANIMAL_ID))
+  #Check number of animals in this function type
+  #Quadratic-linear function for CFI
+  length(unique(ITC.param.pos2$ANIMAL_ID)); length(unique(Age.remain.pos2$ANIMAL_ID))
 
-#==============================================================================
-# Regrouping the animals have negative slope in Q-L function to Linear function
-#============================================================================== 
-#Select animals have negative slope for DFI in Q-L Function for CFI 
-ID <- unique(ITC.param.pos2$ANIMAL_ID)
-ITC.param.p2 <- data.frame()
+  #==============================================================================
+  # Regrouping the animals have negative slope in Q-L function to Linear function
+  #==============================================================================
+  #Select animals have negative slope for DFI in Q-L Function for CFI
+  ID <- unique(ITC.param.pos2$ANIMAL_ID)
+  ITC.param.p2 <- data.frame()
 
-for(AA in seq_along(ID)){
-  i <- ID[AA]
-  param.p2.neg <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
-  param.p2.neg <- param.p2.neg[dim(param.p2.neg)[1],]
-  
-  
-  ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
-}
-ITC.param.p2.neg <- subset(ITC.param.p2, Slope == -1)
-length(unique(ITC.param.p2.neg$ANIMAL_ID))
-
-#Remove animals have negative slope of DFI out of dataset for Function of Linear-Plateau
-ITC.param.pos2 <- subset(ITC.param.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANIMAL_ID))
-Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANIMAL_ID))
-
-#Add these animals to the group of linear function for CFI
-DFI.neg1 <- c( DFI.neg, unique(ITC.param.p2.neg$ANIMAL_ID))
-DFI.neg <- unique(DFI.neg1)
-# DFI.neg <- as.numeric(as.character(DFI.neg))
-length(DFI.neg)
-
-#==============================================================================
-# Regrouping the animals have Xs too closed to Xlast in Q-L function to QDR function
-#==============================================================================
-
-#Select animals have XS too closed to Xlast Function type 3
-ID <- unique(ITC.param.pos2$ANIMAL_ID)
-
-ITC.param.p2 <- data.frame()
-
-for(AA in seq_along(ID)){
-  i <- ID[AA]
-  param.p2.neg <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
-  param.p2.neg <- param.p2.neg[dim(param.p2.neg)[1],]
-  
-  
-  ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
-}
-
-ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
-length(unique(ITC.param.p2.FT2$ANIMAL_ID))
-
-#Remove animals have negative slope of DFI out of dataset for Function type 3
-ITC.param.pos2 <- subset(ITC.param.pos2, !(ANIMAL_ID %in% ITC.param.p2.FT2$ANIMAL_ID))
-Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.FT2$ANIMAL_ID))
-
-#Add these animals to the group of QDR function for CFI
-DFI.pos11 <- c( DFI.pos1, unique(ITC.param.p2.FT2$ANIMAL_ID))
-DFI.pos1 <- unique(DFI.pos11)
-# DFI.pos1 <- as.numeric(as.character(DFI.pos1))
-
-length(DFI.pos1)
-
-#==============================================================================
-# Regrouping the animals have error in Q-L function to QDR function
-#==============================================================================
-
-#The error pigs in Quadratic-linear function is identified
-Last.pigs <- subset(No.NA.Data.1, !(ANIMAL_ID %in% DFI.neg)); length(unique(Last.pigs$ANIMAL_ID))   
-Last.pigs <- subset(Last.pigs, !(ANIMAL_ID %in% DFI.pos1)); length(unique(Last.pigs$ANIMAL_ID)) 
-Last.pigs <- subset(Last.pigs, !(ANIMAL_ID %in% ITC.param.pos2$ANIMAL_ID)); length(unique(Last.pigs$ANIMAL_ID))  
-
-Last.pigs <- unique(Last.pigs$ANIMAL_ID)
-
-#Add these animals to the group of QDR function for CFI
-DFI.pos11 <- c( DFI.pos1, Last.pigs)
-DFI.pos1 <- unique(DFI.pos11)
-# DFI.pos1 <- as.numeric(as.character(DFI.pos1))
+  for(AA in seq_along(ID)){
+    i <- ID[AA]
+    param.p2.neg <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
+    param.p2.neg <- param.p2.neg[dim(param.p2.neg)[1],]
 
 
-#Reset the animals in group of Quadratic-linear function for CFI
-DFI.pos2 <- unique(Age.remain.pos2$ANIMAL_ID)
+    ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
+  }
+  ITC.param.p2.neg <- subset(ITC.param.p2, Slope == -1)
+  length(unique(ITC.param.p2.neg$ANIMAL_ID))
 
-length(DFI.pos1); length(DFI.neg); length(DFI.pos2)
-  
-#===============================================================
-#Save results to Rdata file
-#===============================================================
+  #Remove animals have negative slope of DFI out of dataset for Function of Linear-Plateau
+  ITC.param.pos2 <- subset(ITC.param.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANIMAL_ID))
+  Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANIMAL_ID))
+
+  #Add these animals to the group of linear function for CFI
+  DFI.neg1 <- c( DFI.neg, unique(ITC.param.p2.neg$ANIMAL_ID))
+  DFI.neg <- unique(DFI.neg1)
+  # DFI.neg <- as.numeric(as.character(DFI.neg))
+  length(DFI.neg)
+
+  #==============================================================================
+  # Regrouping the animals have Xs too closed to Xlast in Q-L function to QDR function
+  #==============================================================================
+
+  #Select animals have XS too closed to Xlast Function type 3
+  ID <- unique(ITC.param.pos2$ANIMAL_ID)
+
+  ITC.param.p2 <- data.frame()
+
+  for(AA in seq_along(ID)){
+    i <- ID[AA]
+    param.p2.neg <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
+    param.p2.neg <- param.p2.neg[dim(param.p2.neg)[1],]
+
+
+    ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
+  }
+
+  ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
+  length(unique(ITC.param.p2.FT2$ANIMAL_ID))
+
+  #Remove animals have negative slope of DFI out of dataset for Function type 3
+  ITC.param.pos2 <- subset(ITC.param.pos2, !(ANIMAL_ID %in% ITC.param.p2.FT2$ANIMAL_ID))
+  Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.FT2$ANIMAL_ID))
+
+  #Add these animals to the group of QDR function for CFI
+  DFI.pos11 <- c( DFI.pos1, unique(ITC.param.p2.FT2$ANIMAL_ID))
+  DFI.pos1 <- unique(DFI.pos11)
+  # DFI.pos1 <- as.numeric(as.character(DFI.pos1))
+
+  length(DFI.pos1)
+
+  #==============================================================================
+  # Regrouping the animals have error in Q-L function to QDR function
+  #==============================================================================
+
+  #The error pigs in Quadratic-linear function is identified
+  Last.pigs <- subset(No.NA.Data.1, !(ANIMAL_ID %in% DFI.neg)); length(unique(Last.pigs$ANIMAL_ID))
+  Last.pigs <- subset(Last.pigs, !(ANIMAL_ID %in% DFI.pos1)); length(unique(Last.pigs$ANIMAL_ID))
+  Last.pigs <- subset(Last.pigs, !(ANIMAL_ID %in% ITC.param.pos2$ANIMAL_ID)); length(unique(Last.pigs$ANIMAL_ID))
+
+  Last.pigs <- unique(Last.pigs$ANIMAL_ID)
+
+  #Add these animals to the group of QDR function for CFI
+  DFI.pos11 <- c( DFI.pos1, Last.pigs)
+  DFI.pos1 <- unique(DFI.pos11)
+  # DFI.pos1 <- as.numeric(as.character(DFI.pos1))
+
+
+  #Reset the animals in group of Quadratic-linear function for CFI
+  DFI.pos2 <- unique(Age.remain.pos2$ANIMAL_ID)
+
+  length(DFI.pos1); length(DFI.neg); length(DFI.pos2)
+
+  #===============================================================
+  #Save results to Rdata file
+  #===============================================================
 
   save(ITC.param.pos2, Age.remain.pos2,
        file = "Data/JRP.DFI.pos2.RData")
