@@ -63,6 +63,7 @@
  # Extract data for animal i
  #-------------------------------------------------------------------------------
   IDC <- seq_along(ID)
+  Data2 <- NULL
   for (idc in IDC){
   i <- ID[idc]
   Data <- No.NA.Data.1[No.NA.Data.1$ANIMAL_ID == i,]
@@ -632,7 +633,6 @@
       ggsave(file = paste0("Graphs/Step4_graphs/Legend/", Data$ANIMAL_ID, ".", "Legend",ii, ".png"),change_model, device="png", width = 6000, height = 3500, units = "px", dpi=600)
     }
 
-
   neg <- rep(0, length(Age))
   neg <- ifelse(Pertubation > 0 & Resistence != 0, -1, 1)
   DFI.sims <- (neg*Pertubation + 1)*ITD
@@ -736,10 +736,12 @@
       # dev.off()
 
     }
+
   IDs <- rep(i,length(Age))
   Data1 <- cbind(Age,IDs, ITC, ITD, df2$DFI.plot, cf2$CFI.plot)
   names(Data1) <- c("Age","ID","ITC", "ITD", "Sim.DFI","Sim.CFI")
-  write.csv2(Data1,file="EAAP_Data3.csv",row.names=FALSE)
+  Data2 <- rbind(Data2,Data1)
+  write.csv2(Data2,file="EAAP_Data3.csv",row.names=FALSE)
 
   # dev.off()
 

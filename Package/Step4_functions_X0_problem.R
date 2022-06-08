@@ -84,6 +84,17 @@
   return (optim.f)
 }
 
+<<<<<<< Updated upstream
+=======
+  #nls function for initial parameter
+  ODE.CFI.obj.nls.0 <- function(p1,p2){
+    P <- c(p1,p2)
+    data <- Data.xy
+    f <- ode(yinit, times, ODE.CFI.optim.0, P)
+    return ( f[,2])
+  }
+
+>>>>>>> Stashed changes
   #------------------------------
   # Quadratic function for TTC
   #------------------------------
@@ -158,7 +169,7 @@
   #----------------------------------
 
   #Fitting initial parameters to the model
-   ODE.CFI.2 <- function(Time, State, Pars) {
+  ODE.CFI.2 <- function(Time, State, Pars) {
     #
     p1 <- Pars[1]  #percentage of decrease of ITD during the 1st perturbation
     max.compFI1 <- Pars[2]
