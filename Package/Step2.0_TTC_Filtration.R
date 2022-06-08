@@ -1,19 +1,19 @@
-##################################################################              
-#               JRP data - ITC
-#               Hieu, Masoomeh and Jaap August 2018
-#               Estimation of TTC (target trajectory of CFI)
-#               Classify the functions used for TTC of CFI
-#               The main function is quadratic-linear for CFI, linear-plateau for DFI
-#               If the slope of DFI curve decreases -> linear for CFI
-#               If the inflection point is too closed to last data point -> quadratic for CFI 
-##################################################################
+  ##################################################################
+  #               JRP data - ITC
+  #               Hieu, Masoomeh and Jaap August 2018
+  #               Estimation of TTC (target trajectory of CFI)
+  #               Classify the functions used for TTC of CFI
+  #               The main function is quadratic-linear for CFI, linear-plateau for DFI
+  #               If the slope of DFI curve decreases -> linear for CFI
+  #               If the inflection point is too closed to last data point -> quadratic for CFI
+  ##################################################################
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
   # dev.off() #To close all graphs
 
-#-------------------------------------------------------------------------------
-# Packages needed for estimaton of Ideal trajectory - nonlinear regression
-#-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Packages needed for estimaton of Ideal trajectory - nonlinear regression
+  #-------------------------------------------------------------------------------
   library("minpack.lm")
   library("nlstools")
   library("nlsMicrobio")
@@ -23,12 +23,12 @@
   library(proto)
   library(nls2)
   library(ggplot2)
-################################################################
+  ################################################################
 
-# Set working directory
+  # Set working directory
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
-#load dataset
+  #load dataset
   load("Data/JRPData.Rdata") #load dataset created in MissingData.step
   
   source("Package/Functions.R")

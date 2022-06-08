@@ -1,29 +1,29 @@
-##################################################################              
-#               JRP data - Missing data
-#               Masoomeh and Hieu 04/12/2017
-#               Automatic detection of missing rows
-#               
-##################################################################
+  ##################################################################
+  #               JRP data - Missing data
+  #               Masoomeh and Hieu 04/12/2017
+  #               Automatic detection of missing rows
+  #
+  ##################################################################
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
   # dev.off() #To close all graphs
 
-#-------------------------------------------------------------------------------
-# Packages needed for estimaton of Ideal trajectory - nonlinear regression
-#-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Packages needed for estimaton of Ideal trajectory - nonlinear regression
+  #-------------------------------------------------------------------------------
 
   library(GrapheR) 
   library(lattice)
   library(ggplot2)
   library(plotrix)
 
-################################################################  
+  ################################################################
   
-#Set working directory  
+  #Set working directory
   
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
-#load data after data treatment  
+  #load data after data treatment
   
   load("Data/JRPData.Rdata")
   
@@ -326,8 +326,8 @@
   #Save results to Rdata file
   #===============================================================  
 
-      save( JRP_NA.0, JRP_NA,              #Step 0: data treatment
-            No.NA.Data.0,                        #Step 1: missing data
-            file = "Data/JRPData.Rdata")
+  save( JRP_NA.0, JRP_NA,              #Step 0: data treatment
+        No.NA.Data.0,                        #Step 1: missing data
+        file = "Data/JRPData.Rdata")
 
     

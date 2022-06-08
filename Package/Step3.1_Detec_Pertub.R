@@ -1,18 +1,18 @@
-##################################################################              
-#               ToPig data - DETECTING DEVIATIONS
-#               Masoomeh and Hieu 04/12/2017
-#               
-#               Identifing perturbation from the deviation
-#               of CFI from TTC (code for group of animals)
-##################################################################
+  ##################################################################
+  #               ToPig data - DETECTING DEVIATIONS
+  #               Masoomeh and Hieu 04/12/2017
+  #
+  #               Identifing perturbation from the deviation
+  #               of CFI from TTC (code for group of animals)
+  ##################################################################
 
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
   # dev.off() #To close all graphs
 
-#-------------------------------------------------------------------------------
-# Packages needed to detect deviations of TTC
-#-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Packages needed to detect deviations of TTC
+  #-------------------------------------------------------------------------------
   
   library(doBy)
   library(gplots)
@@ -20,15 +20,16 @@
   library(fda)
 
 
-################################################################
+  ################################################################
 
-# Set working directory  
+  # Set working directory
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
 
   #-------------------------------------------------------------------------------
   # Import data file and functions
   #-------------------------------------------------------------------------------
 
+  # load("Data/JRPData.Rdata")
   load("Data/JRPData_TTC.RData")
   load("Data/JRP.DFI.neg.Rdata")
   load("Data/JRP.DFI.pos1.Rdata")
@@ -68,10 +69,13 @@
   #===============================================================
   # Run For loop
   IDC <- seq_along(ID) #
+  # IDC <- as.numeric(5775)
   # IDC = c(1: length(ID))
   for (idc in IDC){
   # idc = 111 # 41 42 35 23 33 # 8 9 102 23 18
+  # idc <- 1
   i <- ID[idc] # order number of one animal
+
           
   #-------------------------------------------------------------------------------
   # Extract data for animal i
@@ -83,7 +87,7 @@
   Age <- Data$Age.plot
   CFI <- Data$CFI.plot
   DFI <- Data$DFI.plot
-    IDs <- Data$ANIMAL_ID
+  IDs <- Data$ANIMAL_ID
     
   #-------------------------------------------------------------------------------
   # Calulate TTC using abcd function
@@ -275,7 +279,7 @@
     #Find the begining of the first perturbation
     pertub.day <- difp1 %>% filter(end.p == -1); pertub.day <- pertub.day$eval_day
     
-    #After remove the first growing period (7 days) if the 1st deviation has its magnitude larger than 5%
+    #After remove the first growing period (7 days) if the 1st deviation has its magnitude larger than 10%
     #We consider it as a perturbation, thus, we include all data from first period to the data again
     
     if(normal.day[1] - difp1$eval_day[1] < crit2 &
@@ -301,11 +305,11 @@
       
       normal.day1 <- ifelse(normal.day[1] > difp1$eval_day[1] + crit2, normal.day[1], normal.day[2])
 
-      #Test if after removing the first week, magnitude of deviation is still larger than 5%; we keep 1st week, otherwise we remove 1st week
+      #Test if after removing the first week, magnitude of deviation is still larger than 10%; we keep 1st week, otherwise we remove 1st week
       test.data <- filter(difp1, eval_day %in% seq(difp1$eval_day[1] + crit2, normal.day1, by = 0.1))
       dif.CFI1 <- test.data %>% group_by(dif.CFI) %>% dplyr::summarise(count = n()) %>% arrange(desc(count)) %>% top_n(2)
       as.numeric(dif.CFI1$dif.CFI)
-      crit2 <- ifelse(dif.CFI1$dif.CFI[1] <= -5 && (normal.day1 - (difp1$eval_day[1] + crit2)) >= 5, 0, 7)
+      crit2 <- ifelse(dif.CFI1$dif.CFI[1] <= -10 && (normal.day1 - (difp1$eval_day[1] + crit2)) >= 5, 0, 7)
     }
     
     crit2 #if crit2 = 0, we have to include the first week to perturbation
@@ -474,8 +478,8 @@
     names(A) <- c("Min.Day", "Min.perc")
     pertub.table <- cbind(pertub.table, A)
     
-    #Remove the deviations which have their duration less than 5 days from the table
-    pertub.table <- pertub.table %>% filter(Min.perc <= -5)
+    #Remove the deviations which have their duration less than 10 days from the table
+    pertub.table <- pertub.table %>% filter(Min.perc <= -10)
     
     # #-------------------------------------------------------------------------------
     # # Add it into dif dataframe

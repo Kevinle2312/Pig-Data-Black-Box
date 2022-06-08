@@ -1,29 +1,29 @@
-##################################################################              
-#               JRP data - ITC
-#               Hieu, Masoomeh and Jaap August 2018
-#               Estimation of TTC (target trajectory of CFI)
-#               Fit a quadratic function for CFI data
-#
-##################################################################
+  ##################################################################
+  #               JRP data - ITC
+  #               Hieu, Masoomeh and Jaap August 2018
+  #               Estimation of TTC (target trajectory of CFI)
+  #               Fit a quadratic function for CFI data
+  #
+  ##################################################################
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
   # dev.off() #To close all graphs
 
-#-------------------------------------------------------------------------------
-# Packages needed for estimaton of Ideal trajectory - nonlinear regression
-#-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Packages needed for estimaton of Ideal trajectory - nonlinear regression
+  #-------------------------------------------------------------------------------
   library("minpack.lm")
   library("nlstools")
   library("nlsMicrobio")
   library("stats") 
   library("tseries") #runs test for auto correlation
   
-################################################################
+  ################################################################
 
-# Set working directory
+  # Set working directory
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
-#load dataset
+  #load dataset
   load("Data/JRPData_TTC.Rdata") #load dataset created in MissingData.step
   
   source("Package/Functions.R")
@@ -205,34 +205,45 @@
                            "idc1"
                           )
     
-    param.2  
+    param.2
+    #Calculate the target CFI
+    param.i <- as.numeric(param.2[dim(param.2)[1], 5:7])
+    Xs <- param.2[dim(param.2)[1],]$Xs
+    ITC <- pred.abcd.1(param.i, Data$Age)[[1]]
+    #Detecting negative element
+    # if (ITC[1] < 0) {
+    #   minus_detector <- 1
+    # }
+    # else {
+    #   minus_detector <- 0
+    # }
     #Add one column about the slope of DFI to the function
     Slope <- NULL
     for(ii in 1:dim(param.2)[1]){
       
-      if(param.2[ii,]$c < 0){
-        Slope.1 <- -1
-      } else {
-        Slope.1 <- 1
-      }
-        
+        if(param.2[ii,]$c < 0){
+          Slope.1 <- -1
+        } else {
+          Slope.1 <- 1
+        }
+
         Slope <- c(Slope, Slope.1)
       }
   
     param.2$Slope <- Slope  
 
- #-------------------------------------------------------------------------------
- # Give Animal ID for each animal and save them to dataframes in the loop
- #-------------------------------------------------------------------------------    
-   ANIMAL_ID <- rep(i, dim(Data.new)[1])
-   idc1 <- rep(idc1, dim(Data.new)[1])
-   Data.new <- cbind(ANIMAL_ID , Data.new, idc1)
-    
-   Data.remain <- rbind(Data.remain, Data.new)
-   
-   Age.remain.pos1 <- Data.remain[, c(1:4, 8)]
-   
-   ITC.param.pos1 <- rbind(ITC.param.pos1 , param.2)
+    #-------------------------------------------------------------------------------
+    # Give Animal ID for each animal and save them to dataframes in the loop
+    #-------------------------------------------------------------------------------
+    ANIMAL_ID <- rep(i, dim(Data.new)[1])
+    idc1 <- rep(idc1, dim(Data.new)[1])
+    Data.new <- cbind(ANIMAL_ID , Data.new, idc1)
+
+    Data.remain <- rbind(Data.remain, Data.new)
+
+    Age.remain.pos1 <- Data.remain[, c(1:4, 8)]
+
+    ITC.param.pos1 <- rbind(ITC.param.pos1 , param.2)
    
   } # end FOR loop
   
@@ -280,4 +291,4 @@ DFI.pos1 <- unique(Age.remain.pos1$ANIMAL_ID)
   save(No.NA.Data.1, DFI.neg, DFI.pos1, DFI.pos2,
        file = "Data/JRPData_TTC.RData")
 
-#DFI.neg <- factor(DFI.neg1, levels = 1:nlevels(DFI.pos2), labels = levels(DFI.pos2))
+  #DFI.neg <- factor(DFI.neg1, levels = 1:nlevels(DFI.pos2), labels = levels(DFI.pos2))

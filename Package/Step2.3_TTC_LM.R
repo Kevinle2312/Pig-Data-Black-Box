@@ -1,29 +1,29 @@
-##################################################################              
-#               JRP data - ITC
-#               Hieu, Masoomeh and Jaap August 2018
-#               Estimation of TTC (target trajectory of CFI)
-#               Fit a linear function for CFI data
-#
-##################################################################
+  ##################################################################
+  #               JRP data - ITC
+  #               Hieu, Masoomeh and Jaap August 2018
+  #               Estimation of TTC (target trajectory of CFI)
+  #               Fit a linear function for CFI data
+  #
+  ##################################################################
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
   # dev.off() #To close all graphs
 
-#-------------------------------------------------------------------------------
-# Packages needed for estimaton of Ideal trajectory - nonlinear regression
-#-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Packages needed for estimaton of Ideal trajectory - nonlinear regression
+  #-------------------------------------------------------------------------------
   library("minpack.lm")
   library("nlstools")
   library("nlsMicrobio")
   library("stats") 
   library("tseries") #runs test for auto correlation
   
-################################################################
+  ################################################################
 
-# Set working directory
+  # Set working directory
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
-#load dataset
+  #load dataset
   load("Data/JRPData_TTC.Rdata") #load dataset created in MissingData.step
   
   source("Package/Functions.R")

@@ -1,17 +1,17 @@
-##################################################################              
-#               JRP data - ITC
-#               Hieu, Masoomeh and Jaap August 2018
-#               Estimation of TTC (target trajectory of CFI)
-#               Fit a quadratic-linear function for CFI data
-#
-##################################################################
+  ##################################################################
+  #               JRP data - ITC
+  #               Hieu, Masoomeh and Jaap August 2018
+  #               Estimation of TTC (target trajectory of CFI)
+  #               Fit a quadratic-linear function for CFI data
+  #
+  ##################################################################
 
   rm(list=ls(all=TRUE)) #To remove the hisory 
   # dev.off() #To close all graphs
 
-#-------------------------------------------------------------------------------
-# Packages needed for estimaton of Ideal trajectory - nonlinear regression
-#-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Packages needed for estimaton of Ideal trajectory - nonlinear regression
+  #-------------------------------------------------------------------------------
   library("minpack.lm")
   library("nlstools")
   library("nlsMicrobio")
@@ -21,12 +21,12 @@
   library(proto)
   library(nls2)
   
-################################################################
+  ################################################################
 
-# Set working directory
+  # Set working directory
   setwd("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box")
   
-#load dataset
+  #load dataset
   load("Data/JRPData_TTC.Rdata") #load dataset created in MissingData.step
   
   source("Package/Functions.R")
@@ -121,7 +121,7 @@
     #--------------------------------------------
     # Create empty lists to store data after loop
     #--------------------------------------------
-    
+    d <- list()
     par <- list()
     AC.res <- list()
     AC.pvalue <- NULL
@@ -148,113 +148,113 @@
     #-------------------------------------------------------------------------------
     
             while ((AC_pvalue<=0.05) && datapointsleft >= 20){
-              weight <- 1/Y^2
-              # ---------------- NON linear reg applied to log(Y) ---------------------------------
-              st2 <- nls2(Y ~ nls.func.2(X0, Xs, DFIs, CFIs),
-                          Data.xy,
-                          start = st1,
-                          weights = weight,
-                          trace = F,
-                          algorithm = "brute-force")
-              par_init <- coef(st2)
-              par_init
-              st1 <- st1[!(st1$Xs == par_init[2]),]
-              # nls.CFI <- nlsLM(Y ~ nls.func.2(X0, Xs, DFIs, CFIs),
-              #                Data.xy,
-              #                control = list(tol = 1e-2, printEval = TRUE, maxiter = 1024),
-              #                start = list(X0 = par_init[1], Xs = par_init[2],
-              #                             DFIs = par_init[3], CFIs = par_init[4]),
-              #                weights = weight,
-              #                algorithm = "port",
-              #                lower = c(-100000,X0.0+1, -100000, -100000),
-              #                upper = c(100000, Xlast-1, 100000, 100000),
-              #                trace = F)
+                weight <- 1/Y^2
+                # ---------------- NON linear reg applied to log(Y) ---------------------------------
+                st2 <- nls2(Y ~ nls.func.2(X0, Xs, DFIs, CFIs),
+                            Data.xy,
+                            start = st1,
+                            weights = weight,
+                            trace = F,
+                            algorithm = "brute-force")
+                par_init <- coef(st2)
+                par_init
+                st1 <- st1[!(st1$Xs == par_init[2]),]
+                # nls.CFI <- nlsLM(Y ~ nls.func.2(X0, Xs, DFIs, CFIs),
+                #                Data.xy,
+                #                control = list(tol = 1e-2, printEval = TRUE, maxiter = 1024),
+                #                start = list(X0 = par_init[1], Xs = par_init[2],
+                #                             DFIs = par_init[3], CFIs = par_init[4]),
+                #                weights = weight,
+                #                algorithm = "port",
+                #                lower = c(-100000,X0.0+1, -100000, -100000),
+                #                upper = c(100000, Xlast-1, 100000, 100000),
+                #                trace = F)
 
-              nls.CFI <- nls2(Y ~ nls.func.2(X0, Xs, DFIs, CFIs),
-                                              Data.xy,
-                                              start = st1,
-                                              weights = weight,
-                                              control = nls.control(warnOnly = TRUE),
-                                              trace = T,
-                                              algorithm = "port",
-                                              lower = c(-100000,X0.0+1, -100000, -100000),
-                                              upper = c(100000, Xlast-1, 100000, 100000))
-              
-              #--------RESULTS analysis GOODNESS of fit
-              #estimate params
-              par[[j]] <- coef(nls.CFI)
-              par.abcd[j,] <- abcd.2(as.vector(coef(nls.CFI) )) #calculation of a, b, c and d
-              param[j,] <- par[[j]]
-              param.2[j-1,] <- cbind(param[j,], par.abcd[j,])
-              
-              #summary
-              # summ = overview((nls.CFI))  #summary
-              #residuals
-              res1 <- nlsResiduals(nls.CFI) #residuals
-              res2 <- nlsResiduals(nls.CFI)$resi1
-              res <- res2[, 2]
-              AC.res <- test.nlsResiduals(res1)
-              AC.pvalue[j] <- AC.res$p.value
-              
-              #---------Check for negative residuals----------
-              
-              #Add filtration step order to data
-              Step <- rep(j - 1, length(x)) 
-              #create a new dataset with predicted CFI included
-              Data.new <- data.frame(cbind(x, Z, Y, pred.func.2(par[[j]],x)[[1]], res, Step))
-              names(Data.new) <- c("Age", "Observed_DFI","Observed_CFI", "Predicted_CFI", "Residual", "Step")
-              # plot(Data.new$Age, Data.new$Predicted_CFI, type = "l", col = "black",lwd = 2,
-              #      ylim = c(0, max(Data.new$Predicted_CFI, Data.new$Observed_CFI)))
-              # lines(Data.new$Age, Data.new$Observed_CFI, type = "p", cex = 1.5)
-            
-              #
-              #remove negative res
-              Data.pos <- Data.new[!Data.new$Residual<0,]
-              # lines(Data.pos$Age, Data.pos$Predicted_CFI, type = "l", col = j-1, lwd = 2)
-              # lines(Data.pos$Age, Data.pos$Observed_CFI, type = "p", col = j, cex = 1.5)
-              #restart 
-              
-              #Criteria to stop the loop when the estimated parameters are equal to initial parameters
-              # Crite <- sum(param.2[dim(param.2)[1],c(1:4)] == par_init) 
-              
-              datapointsleft <- as.numeric(dim(Data.pos)[1])
-              par_init <- par[[j]]
-              AC_pvalue <- AC.pvalue[j]
-              j <- j+1
-              x <- Data.pos$Age
-              Y <- Data.pos$Observed_CFI
-              Z <- Data.pos$Observed_DFI
-              Data.xy <- as.data.frame(cbind(x,Y))
-              dpl <- c(dpl, datapointsleft)
-              dpl
-              #Create again the grid
-              X0.0 <- x[1]
-              Xlast <- x[length(x)]
-              #Xs
-              if(par_init[2] -15 <= X0.0){
-                Xs.1 <- round(seq(X0.0 + 5, Xlast - 5, len = 30), digits = 0)
-              } else if(par_init[2] + 5 >= Xlast){
-                Xs.1 <- round(seq(par_init[2]-10, par_init[2]-1, len = 6), digits = 0)
-              } else{
-                Xs.1 <- round(seq(par_init[2]-5, par_init[2] + 5, len = 6), digits = 0)
-              }
-              #
-              X0.1 <- rep(X0.0, length(Xs.1))
-              DFIs.1 <- NULL
-              CFIs.1 <- NULL
-              for(A in seq_along(Xs.1)){
-                DFIs2 <- Data[Data$Age.plot == Xs.1[A],]$DFI.plot
-                CFIs2 <- Data[Data$Age.plot == Xs.1[A],]$CFI.plot
-                DFIs.1 <- c(DFIs.1, DFIs2)
-                CFIs.1 <- c(CFIs.1, CFIs2)
-              }
-              st1 <- data.frame(cbind(X0.1, Xs.1, DFIs.1, CFIs.1))
+                nls.CFI <- nls2(Y ~ nls.func.2(X0, Xs, DFIs, CFIs),
+                                                Data.xy,
+                                                start = st1,
+                                                weights = weight,
+                                                control = nls.control(warnOnly = TRUE),
+                                                trace = T,
+                                                algorithm = "port",
+                                                lower = c(-100000,X0.0+1, -100000, -100000),
+                                                upper = c(100000, Xlast-1, 100000, 100000))
 
-              if(X0.0 <= par_init[2] && Xlast >=par_init[2]){
-              st1 <- rbind(st1, par_init)
-              }
-              names(st1) <- c("X0","Xs", "DFIs","CFIs")
-              }
+                #--------RESULTS analysis GOODNESS of fit
+                #estimate params
+                par[[j]] <- coef(nls.CFI)
+                par.abcd[j,] <- abcd.2(as.vector(coef(nls.CFI) )) #calculation of a, b, c and d
+                param[j,] <- par[[j]]
+                param.2[j-1,] <- cbind(param[j,], par.abcd[j,])
+
+                #summary
+                # summ = overview((nls.CFI))  #summary
+                #residuals
+                res1 <- nlsResiduals(nls.CFI) #residuals
+                res2 <- nlsResiduals(nls.CFI)$resi1
+                res <- res2[, 2]
+                AC.res <- test.nlsResiduals(res1)
+                AC.pvalue[j] <- AC.res$p.value
+
+                #---------Check for negative residuals----------
+
+                #Add filtration step order to data
+                Step <- rep(j - 1, length(x))
+                #create a new dataset with predicted CFI included
+                Data.new <- data.frame(cbind(x, Z, Y, pred.func.2(par[[j]],x)[[1]], res, Step))
+                names(Data.new) <- c("Age", "Observed_DFI","Observed_CFI", "Predicted_CFI", "Residual", "Step")
+                # plot(Data.new$Age, Data.new$Predicted_CFI, type = "l", col = "black",lwd = 2,
+                #      ylim = c(0, max(Data.new$Predicted_CFI, Data.new$Observed_CFI)))
+                # lines(Data.new$Age, Data.new$Observed_CFI, type = "p", cex = 1.5)
+
+                #
+                #remove negative res
+                Data.pos <- Data.new[!Data.new$Residual<0,]
+                # lines(Data.pos$Age, Data.pos$Predicted_CFI, type = "l", col = j-1, lwd = 2)
+                # lines(Data.pos$Age, Data.pos$Observed_CFI, type = "p", col = j, cex = 1.5)
+                #restart
+
+                #Criteria to stop the loop when the estimated parameters are equal to initial parameters
+                # Crite <- sum(param.2[dim(param.2)[1],c(1:4)] == par_init)
+
+                datapointsleft <- as.numeric(dim(Data.pos)[1])
+                par_init <- par[[j]]
+                AC_pvalue <- AC.pvalue[j]
+                j <- j+1
+                x <- Data.pos$Age
+                Y <- Data.pos$Observed_CFI
+                Z <- Data.pos$Observed_DFI
+                Data.xy <- as.data.frame(cbind(x,Y))
+                dpl <- c(dpl, datapointsleft)
+                dpl
+                #Create again the grid
+                X0.0 <- x[1]
+                Xlast <- x[length(x)]
+                #Xs
+                if(par_init[2] -15 <= X0.0){
+                  Xs.1 <- round(seq(X0.0 + 5, Xlast - 5, len = 30), digits = 0)
+                } else if(par_init[2] + 5 >= Xlast){
+                  Xs.1 <- round(seq(par_init[2]-10, par_init[2]-1, len = 6), digits = 0)
+                } else{
+                  Xs.1 <- round(seq(par_init[2]-5, par_init[2] + 5, len = 6), digits = 0)
+                }
+                #
+                X0.1 <- rep(X0.0, length(Xs.1))
+                DFIs.1 <- NULL
+                CFIs.1 <- NULL
+                for(A in seq_along(Xs.1)){
+                  DFIs2 <- Data[Data$Age.plot == Xs.1[A],]$DFI.plot
+                  CFIs2 <- Data[Data$Age.plot == Xs.1[A],]$CFI.plot
+                  DFIs.1 <- c(DFIs.1, DFIs2)
+                  CFIs.1 <- c(CFIs.1, CFIs2)
+                }
+                st1 <- data.frame(cbind(X0.1, Xs.1, DFIs.1, CFIs.1))
+
+                if(X0.0 <= par_init[2] && Xlast >=par_init[2]){
+                  st1 <- rbind(st1, par_init)
+                }
+                names(st1) <- c("X0","Xs", "DFIs","CFIs")
+              }#End of the while loop
     
       ANIMAL_ID <- rep(i, dim(param.2)[1])
       FuncType <- unique(Data$FuncType) 
@@ -281,7 +281,17 @@
                              "FuncType",
                              "idc1"
                            )
-      
+      #Calculate the target CFI
+      param.i <- as.numeric(param.2[dim(param.2)[1], 6:8])
+      Xs <- param.2[dim(param.2)[1],]$Xs
+      ITC <- pred.abcd.2(param.i, Data$Age)[[1]]
+      #Deltecting negative element
+      # if (ITC[1] < 0) {
+      #   minus_detector <- 1
+      # }
+      # else {
+      #   minus_detector <- 0
+      # }
       #Add one column about the slope of DFI to the function
       Slope <- NULL
       for(ii in 1:dim(param.2)[1]){
@@ -291,15 +301,15 @@
         } else {
           Slope.1 <- 1
         }
-        
+
         Slope <- c(Slope, Slope.1)
       }
       
       param.2$Slope <- Slope ; param.2 
   
- #-------------------------------------------------------------------------------
- # Give Animal ID for each animal and save them to dataframes in the loop
- #-------------------------------------------------------------------------------    
+      #-------------------------------------------------------------------------------
+      # Give Animal ID for each animal and save them to dataframes in the loop
+      #-------------------------------------------------------------------------------
       ANIMAL_ID <- rep(i, dim(Data.new)[1])
       idc1 <- rep(idc1, dim(Data.new)[1])
       Data.new <- cbind(ANIMAL_ID , Data.new, idc1)
@@ -309,9 +319,15 @@
       Age.remain.pos2 <- Data.remain[, c(1:4, 8)]
       
       ITC.param.pos2 <- rbind(ITC.param.pos2 , param.2 )
-  
+
+      #Reset CFI value
+      param.i <- NULL
+      Xs <- NULL
+      ITC <- NULL
+
   } # end FOR loop
   
+<<<<<<< Updated upstream
 #Check number of animals in this function type  
 #Quadratic-linear function for CFI
 length(unique(ITC.param.pos2$ANIMAL_ID)); length(unique(Age.remain.pos2$ANIMAL_ID))
@@ -361,6 +377,58 @@ for(AA in seq_along(ID)){
   
   ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
 }
+=======
+  #Check number of animals in this function type
+  #Quadratic-linear function for CFI
+  length(unique(ITC.param.pos2$ANIMAL_ID)); length(unique(Age.remain.pos2$ANIMAL_ID))
+
+  #==============================================================================
+  # Regrouping the animals have negative slope in Q-L function to Linear function
+  #==============================================================================
+  #Select animals have negative slope for DFI in Q-L Function for CFI
+  ID <- unique(ITC.param.pos2$ANIMAL_ID)
+  ITC.param.p2 <- data.frame()
+
+  for(AA in seq_along(ID)){
+    i <- ID[AA]
+    param.p2.neg <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
+    param.p2.neg <- param.p2.neg[dim(param.p2.neg)[1],]
+
+
+    ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
+  }
+  ITC.param.p2.neg <- subset(ITC.param.p2, Slope == -1)
+  length(unique(ITC.param.p2.neg$ANIMAL_ID))
+
+  #Remove animals have negative slope of DFI out of dataset for Function of Linear-Plateau
+  ITC.param.pos2 <- subset(ITC.param.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANIMAL_ID))
+  Age.remain.pos2 <- subset(Age.remain.pos2, !(ANIMAL_ID %in% ITC.param.p2.neg$ANIMAL_ID))
+
+  #Add these animals to the group of linear function for CFI
+  DFI.neg1 <- c( DFI.neg, unique(ITC.param.p2.neg$ANIMAL_ID))
+  DFI.neg <- unique(DFI.neg1)
+  # DFI.neg <- as.numeric(as.character(DFI.neg))
+  length(DFI.neg)
+
+  #==============================================================================
+  # Regrouping the animals have Xs too closed to Xlast in Q-L function to QDR function
+  #==============================================================================
+
+  #Select animals have XS too closed to Xlast Function type 3
+  ID <- unique(ITC.param.pos2$ANIMAL_ID)
+
+  ITC.param.p2 <- data.frame()
+
+  for(AA in seq_along(ID)){
+    i <- ID[AA]
+    param.p2.neg <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
+    param.p2.neg <- param.p2.neg[dim(param.p2.neg)[1],]
+    ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
+  }
+
+  ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
+  length(unique(ITC.param.p2.FT2$ANIMAL_ID))
+>>>>>>> Stashed changes
 
 ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
 length(unique(ITC.param.p2.FT2$ANIMAL_ID))
