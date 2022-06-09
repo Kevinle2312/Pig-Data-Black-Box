@@ -51,10 +51,10 @@
   #
   p1 <- Pars[1]  #percentage of decrease of ITD during the 1st perturbation
   max.compFI1 <- Pars[2]
-  tbeg1 <- Pars[3]
-  tstop1 <- Pars[4]
-  a <- Pars[5]
-  b <- Pars[6]
+  # tbeg1 <- Pars[3]
+  # tstop1 <- Pars[4]
+  # a <- Pars[5]
+  # b <- Pars[6]
   # CumFI <- Pars[7]
   # c           = Pars[7]
   # d           = Pars[8]
@@ -84,8 +84,7 @@
   return (optim.f)
 }
 
-<<<<<<< Updated upstream
-=======
+
   #nls function for initial parameter
   ODE.CFI.obj.nls.0 <- function(p1,p2){
     P <- c(p1,p2)
@@ -94,7 +93,6 @@
     return ( f[,2])
   }
 
->>>>>>> Stashed changes
   #------------------------------
   # Quadratic function for TTC
   #------------------------------
@@ -132,8 +130,8 @@
     #
     p1 <- Pars[1]  #percentage of decrease of ITD during the 1st perturbation
     max.compFI1 <- Pars[2]
-    tbeg1 <- Pars[3]
-    tstop1 <- Pars[4]
+    # tbeg1 <- Pars[3]
+    # tstop1 <- Pars[4]
     # a           = Pars[5]
     # b           = Pars[6]
     # c           = Pars[7]
@@ -162,6 +160,14 @@
     f <- ode(yinit, times, ODE.CFI.optim.1, P)
     optim.f <- sqrt(sum((data$CFI.plot- f[, 2])^2))
     return (optim.f)
+  }
+
+  #nls function for initial parameter
+  ODE.CFI.obj.nls.1 <- function(p1,p2){
+    P <- c(p1,p2)
+    data <- Data.xy
+    f <- ode(yinit, times, ODE.CFI.optim.1, P)
+    return ( f[,2])
   }
 
   #----------------------------------
@@ -202,8 +208,8 @@
      #
      p1 <- Pars[1]  #percentage of decrease of ITD during the 1st perturbation
      max.compFI1 <- Pars[2]
-     tbeg1 <- Pars[3]
-     tstop1 <- Pars[4]
+     # tbeg1 <- Pars[3]
+     # tstop1 <- Pars[4]
      # a           = Pars[5]
      # b           = Pars[6]
      # c           = Pars[7]
@@ -235,11 +241,19 @@
      return (optim.f)
    }
 
+  #nls function for initial parameter
+  ODE.CFI.obj.nls.2 <- function(p1,p2){
+    P <- c(p1,p2)
+    data <- Data.xy
+    f <- ode(yinit, times, ODE.CFI.optim.2, P)
+    return ( f[,2])
+  }
+
   # ##############################################################################################################################
   # # ESTIMATE ALL PARAMETERS (INCLUDING THE TTC)
   # ##############################################################################################################################
   #
- ODE.CFI.obj.nls <- function(p1, p2, p3, p4){
+  ODE.CFI.obj.nls <- function(p1, p2, p3, p4){
    P = c(p1, p2, p3, p4)
    data = Data.xy
    f <- ode(yinit, times, ODE.CFI.optim, P)
@@ -247,7 +261,7 @@
    return ( f[,2])
  }
 
- ODE.CFI.obj.nls1 <- function(p4){
+  ODE.CFI.obj.nls1 <- function(p4){
    p2 = coef(st2)[2]
    p4 = coef(st2)[4]
    p3 = coef(st2)[3]
@@ -258,7 +272,7 @@
    return ( f[,2])
  }
 
- ODE.CFI.optim.all <- function(Time, State, Pars) {
+  ODE.CFI.optim.all <- function(Time, State, Pars) {
    #
    p1          = Pars[1]  #percentage of decrease of ITD during the 1st perturbation
    max.compFI1 = Pars[2]
@@ -286,11 +300,11 @@
  }
 
 
- ##-----------------------------
- ##  objective function
- ##-----------------------------
+   ##-----------------------------
+   ##  objective function
+   ##-----------------------------
 
- ODE.CFI.obj.all <- function(P, data){
+  ODE.CFI.obj.all <- function(P, data){
    data = Data.xy
    f <- ode(yinit, times, ODE.CFI.optim.all, P)
    optim.f = sqrt(sum((data$CFI.plot- f[,2])^2))
