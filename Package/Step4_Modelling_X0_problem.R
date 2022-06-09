@@ -40,6 +40,7 @@
      load("Data/JRP.DFI.pos2.RData")
      load("Data/JRP.DFI.neg.RData")
      source("Package/Functions.R") #functions
+     source("Package/Step4_functions_X0_problem.R")
      options(digits=3) 
 
 #===============================================================
@@ -47,7 +48,7 @@
 #===============================================================
         
  #Order number of Animal_ID
-   ID <- unique(as.factor(No.NA.Data$ANIMAL_ID))
+   ID <- unique(as.factor(No.NA.Data.1$ANIMAL_ID))
 
   #===============================================================
   # DATA PREPARATION
@@ -93,10 +94,10 @@
     }
 
   
-  #Magnitude of the perturbation
-  magnitude <- fn.res %>% filter(Age >= fn.pertub.table$Start[fn.pertub.table$ANIMAL_ID == i] & Age <= fn.pertub.table$End[fn.pertub.table$ANIMAL_ID == i])
-  # magnitude   = res.data %>% filter(Age >= pertub.table$Start[1] & Age <= pertub.table$End[1])
-  magnitude <- magnitude %>% filter(res == min(magnitude$res))
+  # #Magnitude of the perturbation
+  # magnitude <- fn.res %>% filter(Age >= fn.pertub.table$Start[fn.pertub.table$ANIMAL_ID == i] & Age <= fn.pertub.table$End[fn.pertub.table$ANIMAL_ID == i])
+  # # magnitude   = res.data %>% filter(Age >= pertub.table$Start[1] & Age <= pertub.table$End[1])
+  # magnitude <- magnitude %>% filter(res == min(magnitude$res))
   
   #-------------------------------------------------------------------------------
   #Plot
@@ -104,21 +105,21 @@
        
   B <- dev.df[!is.na(dev.df$ppert),]
   
-  plot(Age, res,
-      main = paste( "Pig ID:", ID, "\nDifference between CFI and TTC"),
-      xlab = "Age (days)",
-      ylab = "Amount of difference: CFI - TTC (kg)",
-      type = "o", pch = 10, cex = 0.5,
-      # ylim = c(min(B$dif.CFI, res),
-      #          max(B$dif.CFI, res)),
-     cex.main = 1.5, cex.lab = 1.2)
-  abline(0,0, col = "red")
-  points(fn.pertub.table$Start, fn.pertub.table$value.start,
-        col = "orange", pch=15, cex = 2)
-  points(fn.pertub.table$End, fn.pertub.table$value.end,
-        col = "green", pch=17, cex = 2)
-  points(magnitude$Age, magnitude$res,
-         col = "purple", pch=19, cex = 2)
+  # plot(Age, res,
+  #     main = paste( "Pig ID:", ID, "\nDifference between CFI and TTC"),
+  #     xlab = "Age (days)",
+  #     ylab = "Amount of difference: CFI - TTC (kg)",
+  #     type = "o", pch = 10, cex = 0.5,
+  #     # ylim = c(min(B$dif.CFI, res),
+  #     #          max(B$dif.CFI, res)),
+  #    cex.main = 1.5, cex.lab = 1.2)
+  # abline(0,0, col = "red")
+  # points(fn.pertub.table$Start, fn.pertub.table$value.start,
+  #       col = "orange", pch=15, cex = 2)
+  # points(fn.pertub.table$End, fn.pertub.table$value.end,
+  #       col = "green", pch=17, cex = 2)
+  # points(magnitude$Age, magnitude$res,
+  #        col = "purple", pch=19, cex = 2)
 
   #------------------------------
   # Linear function for TTC
@@ -166,23 +167,23 @@
   pp <- 0
   CompFI_total <- rep(0, length(Age))
   for (ii in fn.table.input$ppert){
-      pp <- pp+1
-      staging <- fn.table.input[fn.table.input$ppert == ii, ]
-      start <- staging$Start
-      end <- staging$End
-      # if (end < Age[1]) end <- staging$End
-      seq_age <- round(seq(start,end))
+    pp <- pp+1
+    staging <- fn.table.input[fn.table.input$ppert == ii, ]
+    start <- staging$Start
+    end <- staging$End
+    # if (end < Age[1]) end <- staging$End
+    seq_age <- round(seq(start,end))
 
 
 
-      #=================================== ================== ================== ==================
-      #  Modelling the response of the animal to a single perturbation
-      #=================================== ================== ================== ==================
+    #=================================== ================== ================== ==================
+    #  Modelling the response of the animal to a single perturbation
+    #=================================== ================== ================== ==================
 
-      #------------------------------
-      # Linear function for TTC
-      #------------------------------
-      if(FuncType == "LM"){
+    #------------------------------
+    # Linear function for TTC
+    #------------------------------
+    if(FuncType == "LM"){
 
         ##-----------------------------
         ## initial values and times
@@ -230,18 +231,18 @@
 
         P.optim <- c(optim.res$par[1], optim.res$par[2])
 
-        # RSS <- ODE.CFI.obj.0(P.optim, Data.xy)
+        RSS <- ODE.CFI.obj.0(P.optim, Data.xy)
 
         # Simulate the ode function
         yout   <- ode(yinit, times, ODE.CFI.optim.0, P.optim)
 
       } else{}
 
-      #----------------------------------
-      # Quadratic function for TTC
-      #----------------------------------
+    #----------------------------------
+    # Quadratic function for TTC
+    #----------------------------------
 
-      if(FuncType == "QDR"){
+    if(FuncType == "QDR"){
 
         ##-----------------------------
         ## initial values and times
@@ -329,7 +330,7 @@
 
         P.optim <- c(optim.res$par[1], optim.res$par[2])
 
-        # RSS <- ODE.CFI.obj.1(P.optim, Data.xy)
+        RSS <- ODE.CFI.obj.1(P.optim, Data.xy)
 
         # Simulate the ode function
         yout   <- ode(yinit, times, ODE.CFI.optim.1, P.optim)
@@ -337,10 +338,10 @@
 
         } else{}
 
-      #----------------------------------
-      # Quadratic-linear function for TTC
-      #----------------------------------
-      if(FuncType == "QLM"){
+    #----------------------------------
+    # Quadratic-linear function for TTC
+    #----------------------------------
+    if(FuncType == "QLM"){
 
         ##-----------------------------
         ## initial values and times
@@ -356,14 +357,14 @@
         # Create a grid to choose the best initial values for k1 and k2
         Data.xy <- Data
         times <- Data.xy$Age.plot
-        yinit <- c(CumFI = ITC[1]) #state
+        yinit <- c(CumFI = abs(ITC[1]) ) #state
         times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
 
         st1 <- expand.grid(p1 = seq(0, 1, len = 10),
                            p2 = seq(1, 10, len = 10))
         #
         # # Use NLS2 to select the best initial parameters
-        st2 <- nls2(CFI.plot ~ ODE.CFI.obj.nls.2(p1, p2),
+        st2 <- nls2(CFI.plot ~ ODE.CFI.obj.nls.2(p1,p2),
                 Data.xy,
                 start = st1,
                 algorithm = "brute-force")
@@ -439,118 +440,126 @@
 
       } else{}
 
-      ###############################################################################
-      ##-----------------------------
-      #  Prepare for plotting
-      ##-----------------------------
+    ###############################################################################
+    ##-----------------------------
+    #  Prepare for plotting
+    ##-----------------------------
 
-      p1 <- P.optim[1]
-      max.compFI1 <- P.optim[2]
-      # tbeg1 <- P.optim[3]
-      # tstop1 <- P.optim[4]
+    p1 <- P.optim[1]
+    max.compFI1 <- P.optim[2]
 
-      Time <- times
-      onoff <- ifelse(Time>start & Time<end, 1, 0)
-      #Target trajectory curve
-      ITC; ITD
-      #Compensatory feed intake
-      CompFI <- (1-yout[, 2]/ITC)*max.compFI1
-      # CompFI_total <- CompFI_total + CompFI
-      #Resistence
-      Resistence <- onoff*(p1-1)
-      # Resistence <- Resistence + Resistence_per
-      #CFI modeling
-      y_out <- (y_out+yout[,2])/as.numeric(pp)
-      #Simulation of DFI
-      DFI.sim <- (Resistence + CompFI + 1)*ITD
-      #Ratio of DFI
-      Ratio.DFI <- DFI.sim/ITD
-      dif <- yout[,2]/ITC
-      #Pertubation quantification
-      pertubation_member <- Resistence + CompFI
-      Pertubation <- Pertubation + pertubation_member
-      #-----------------------------
-      # plot the results
-      #-----------------------------
-      #Ratio between actual and target CFI
-      plot(times, dif,
-           main = "Ratio between CFI and ITC_CFI", type = "l",
-           xlab = "Age (days)", ylab= "Ratio", col="black",
-           # ylim = c(0.94,1),
-           lwd = 2)
+    # Report the estimated parameters
+    k1 <- -(1- p1)*100
+    k2 <- max.compFI1
+
+    Per.para1 <- as.data.frame(cbind(round(tbeg1, digits = 0),
+                                     round(tstop1, digits = 0),
+                                     round(k1, digits = 1),
+                                     round(k2, digits = 2)))
+    names(Per.para1) <- c("t_start", "t_stop", "k1", "k2")
+    ANIMAL_ID <- Data %>% distinct(ANIMAL_ID)
+    Per.para1 <- cbind(ANIMAL_ID, Per.para1)
+    Per.para1$RSS <- RSS
+
+    Time <- times
+    onoff <- ifelse(Time>start & Time<end, 1, 0)
+    #Target trajectory curve
+    ITC; ITD
+    #Compensatory feed intake
+    CompFI <- (1-yout[, 2]/ITC)*max.compFI1
+    # CompFI_total <- CompFI_total + CompFI
+    #Resistence
+    Resistence <- onoff*(p1-1)
+    # Resistence <- Resistence + Resistence_per
+    #CFI modeling
+    y_out <- (y_out+yout[,2])/as.numeric(pp)
+    #Simulation of DFI
+    DFI.sim <- (Resistence + CompFI + 1)*ITD
+    #Ratio of DFI
+    Ratio.DFI <- DFI.sim/ITD
+    dif <- yout[,2]/ITC
+    #Pertubation quantification
+    pertubation_member <- Resistence + CompFI
+    Pertubation <- Pertubation + pertubation_member
+    #-----------------------------
+    # plot the results
+    #-----------------------------
+    #Ratio between actual and target CFI
+    plot(times, dif,
+         main = "Ratio between CFI and ITC_CFI", type = "l",
+         xlab = "Age (days)", ylab= "Ratio", col="black",
+         # ylim = c(0.94,1),
+         lwd = 2)
       abline(v=P.optim[3], lty=2)
       abline(v=P.optim[4], lty=2)
 
-      #Compensatory feed intake
-      par(mfrow = c(1,1))
-      # plot(Time, onoff, type = "l", ylab = "onoff")
-      plot(times, CompFI,
-           main = "Compensatory of feed intake", type = "l", ylab= "compensatory (%)", xlab = "Age (days)",
-           col="black",
-           # ylim = c(1, 1.4),
-           lwd = 2)
+    #Compensatory feed intake
+    par(mfrow = c(1,1))
+    # plot(Time, onoff, type = "l", ylab = "onoff")
+    plot(times, CompFI,
+         main = "Compensatory of feed intake", type = "l", ylab= "compensatory (%)", xlab = "Age (days)",
+         col="black",
+         # ylim = c(1, 1.4),
+         lwd = 2)
       abline(v=P.optim[3], lty=2)
       abline(v=P.optim[4], lty=2)
 
-      #Impact of p1
-      plot(Time, 0- onoff*(1-p1),
-           main = "Impact of p1", type = "l", ylab= "Reduction in DFI (%)", col="black")
+    #Impact of p1
+    plot(Time, 0- onoff*(1-p1),
+         main = "Impact of p1", type = "l", ylab= "Reduction in DFI (%)", col="black")
 
-      #Ratio between actual and target CFI
+    #Ratio between actual and target CFI
 
-      plot(times, yout[,2]/ITC,
-           main = "Ratio between CFI and ITC_CFI", type = "l",
-           xlab = "Age (days)", ylab= "Ratio", col="black",
-           # ylim = c(0.94,1),
-           lwd = 2)
+    plot(times, yout[,2]/ITC,
+         main = "Ratio between CFI and ITC_CFI", type = "l",
+         xlab = "Age (days)", ylab= "Ratio", col="black",
+         # ylim = c(0.94,1),
+         lwd = 2)
       abline(v=P.optim[3], lty=2)
       abline(v=P.optim[4], lty=2)
 
-      #MAIN PLOTS
-      # par(mar=c(4.5,4.5,4.5,1.5))
-      #   e <- CFI.obs - ITC
-      # dev.new()
-      # #dif
-      # plot(Age, CFI.obs - ITC,
-      #      main = paste("Difference between CFI and ITC_CFI", "\nPig ID:", ID),
-      #      xlab = "Age (days)", ylab = "CFI - ITC (kg)",
-      #      ylim = c(min(CFI.obs - ( ITC),  yout[ ,2] -( ITC)),
-      #               max(CFI.obs - ( ITC),  yout[ ,2] -( ITC))),
-      #      type = "p", col = "red",
-      #      cex.main = 1.7, cex.axis = 1.5, cex.lab = 1.5)
-      # abline(0,0, col = "blue", lwd = 2)
-      # points ( yout[ , 1],  yout[ ,2] -ITC,type = "l", lwd = 2.2)
-      # abline(v=P.optim[3], lty=3)
-      # abline(v=P.optim[4], lty=3)
-      # legend("bottomleft",legend = c("ITC", "Dif-obs", "Dif-simul"), col = c("blue","red", "black"),
-      #        lty = c(1,NA, 1), pch = c(NA, 1, NA), bty = "n", lwd = 3, cex = 1.5, pt.cex = 2.5)
-      # dev.off()
-      # par(mfrow = c(1,1))
+    #MAIN PLOTS
+    # par(mar=c(4.5,4.5,4.5,1.5))
+    #   e <- CFI.obs - ITC
+    # dev.new()
+    # #dif
+    # plot(Age, CFI.obs - ITC,
+    #      main = paste("Difference between CFI and ITC_CFI", "\nPig ID:", ID),
+    #      xlab = "Age (days)", ylab = "CFI - ITC (kg)",
+    #      ylim = c(min(CFI.obs - ( ITC),  yout[ ,2] -( ITC)),
+    #               max(CFI.obs - ( ITC),  yout[ ,2] -( ITC))),
+    #      type = "p", col = "red",
+    #      cex.main = 1.7, cex.axis = 1.5, cex.lab = 1.5)
+    # abline(0,0, col = "blue", lwd = 2)
+    # points ( yout[ , 1],  yout[ ,2] -ITC,type = "l", lwd = 2.2)
+    # abline(v=P.optim[3], lty=3)
+    # abline(v=P.optim[4], lty=3)
+    # legend("bottomleft",legend = c("ITC", "Dif-obs", "Dif-simul"), col = c("blue","red", "black"),
+    #        lty = c(1,NA, 1), pch = c(NA, 1, NA), bty = "n", lwd = 3, cex = 1.5, pt.cex = 2.5)
+    # dev.off()
+    # par(mfrow = c(1,1))
 
-      #ggplot2
-      #Compensatory feed intake and perturbation effect
-      AF1 <- data.frame(cbind(times, CompFI*100))
-      names(AF1) <- c("Age.plot", "Percent")
-      AF1 <- AF1 %>% mutate(Curve = rep("Resilience", length(times)))
-      # if (AF1$Percent < 0 ){
-      #       AF1$Percent <- 0
-      #     }
-      AF2 <- data.frame(cbind(times, (0- onoff*(1-p1))*100))
-      names(AF2) <- c("Age.plot", "Percent")
-      AF2 <- AF2 %>% mutate(Curve = rep("Resistance", length(times)))
+    #ggplot2
+    #Compensatory feed intake and perturbation effect
+    AF1 <- data.frame(cbind(times, CompFI*100))
+    names(AF1) <- c("Age.plot", "Percent")
+    AF1 <- AF1 %>% mutate(Curve = rep("Resilience", length(times)))
+    AF2 <- data.frame(cbind(times, (0- onoff*(1-p1))*100))
+    names(AF2) <- c("Age.plot", "Percent")
+    AF2 <- AF2 %>% mutate(Curve = rep("Resistance", length(times)))
 
-      AF3 <- data.frame(cbind(times, rep(0, length(times))))
-      names(AF3) <- c("Age.plot", "Percent")
-      AF3 <- AF3 %>% mutate(Curve = rep("AA", length(times)))
-      AF <- rbind(AF1, AF2, AF3)
+    AF3 <- data.frame(cbind(times, rep(0, length(times))))
+    names(AF3) <- c("Age.plot", "Percent")
+    AF3 <- AF3 %>% mutate(Curve = rep("AA", length(times)))
+    AF <- rbind(AF1, AF2, AF3)
 
 
 
-      # ggsave(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Ratio",ii, ".png"), width = 6000, height = 3500, units = "px", res=600)
-      cols.CFI <- c("Resilience" = "green", "Resistance" = "purple", "AA" = "blue")
-      type.CFI <- c("Resilience" = "solid", "Resistance" = "solid", "AA" = "dashed")
-      size.CFI <- c("Resilience" = 1.3, "Resistance" = 2.5, "AA" = 1)
-      plot_res_model <- ggplot(data = AF, aes(x = Age.plot, y = Percent)) +
+    # ggsave(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Ratio",ii, ".png"), width = 6000, height = 3500, units = "px", res=600)
+    cols.CFI <- c("Resilience" = "green", "Resistance" = "purple", "AA" = "blue")
+    type.CFI <- c("Resilience" = "solid", "Resistance" = "solid", "AA" = "dashed")
+    size.CFI <- c("Resilience" = 1.3, "Resistance" = 2.5, "AA" = 1)
+    plot_res_model <- ggplot(data = AF, aes(x = Age.plot, y = Percent)) +
         geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1) +
         geom_line(aes(color = Curve, linetype=Curve, size = Curve)) +
         scale_color_manual(values = cols.CFI, labels = c("Resilience","Resistance","Target")) +
@@ -571,25 +580,25 @@
         ) +
         theme(axis.text=element_text(size=12),
               axis.title=element_text(size=14,face="bold"))
-      ggsave(file = paste0("Graphs/Step4_graphs/Pertubation Model/", Data$ANIMAL_ID, ".", "Ratio",ii, ".png"),plot_res_model,device = "png",  width = 6000, height = 3500, units = "px", dpi=600)
-      dev.off()
+    ggsave(file = paste0("Graphs/Step4_graphs/Pertubation Model/", Data$ANIMAL_ID, ".", "Ratio",ii, ".png"),plot_res_model,device = "png",  width = 6000, height = 3500, units = "px", dpi=600)
+    dev.off()
 
 
 
 
-      # #Ratio
-      ratio1 <- data.frame(cbind(Time, Ratio.DFI))
-      names(ratio1) <- c("Age.plot", "Ratio.plot")
-      ratio1 <- ratio1 %>% mutate(Curve = rep("Compen", length(Time)))
+    # #Ratio
+    ratio1 <- data.frame(cbind(Time, Ratio.DFI))
+    names(ratio1) <- c("Age.plot", "Ratio.plot")
+    ratio1 <- ratio1 %>% mutate(Curve = rep("Compen", length(Time)))
 
-      ratio2 <- data.frame(cbind(Time, 1+ onoff*(p1-1)))
-      names(ratio2) <- c("Age.plot", "Ratio.plot")
-      ratio2 <- ratio2 %>% mutate(Curve = rep("Impact", length(Time)))
-      ratio <- rbind(ratio1, ratio2)
+    ratio2 <- data.frame(cbind(Time, 1+ onoff*(p1-1)))
+    names(ratio2) <- c("Age.plot", "Ratio.plot")
+    ratio2 <- ratio2 %>% mutate(Curve = rep("Impact", length(Time)))
+    ratio <- rbind(ratio1, ratio2)
 
-      cols.ratio  <- c("Compen" = "blue", "Impact" = "red")
-      types <- c("Compen" = "solid", "Impact" = "dotdash")
-      ratio_model <- ggplot(data = ratio, aes(x = Age.plot, y = Ratio.plot)) +
+    cols.ratio  <- c("Compen" = "blue", "Impact" = "red")
+    types <- c("Compen" = "solid", "Impact" = "dotdash")
+    ratio_model <- ggplot(data = ratio, aes(x = Age.plot, y = Ratio.plot)) +
         geom_hline(yintercept=1, linetype="solid", color = "black", size = 1) +
         geom_line(aes(color = Curve, linetype = Curve), size = 1.2) +
         scale_color_manual(values = cols.ratio) +
@@ -599,18 +608,18 @@
         ggtitle(paste("Ratio between actual and target DFI", "\n of the Pig", i)) +
         theme(plot.title = element_text(hjust = .5)) +
         theme_bw()
-      ggsave(file = paste0("Graphs/Step4_graphs/Ratio DFI/", Data$ANIMAL_ID, ".", "Ratio_DFI",ii, ".png"),ratio_model, device="png", width = 6000, height = 3500, units = "px", dpi=600)
+    ggsave(file = paste0("Graphs/Step4_graphs/Ratio DFI/", Data$ANIMAL_ID, ".", "Ratio_DFI",ii, ".png"),ratio_model, device="png", width = 6000, height = 3500, units = "px", dpi=600)
 
 
 
-      #Legend
-      LD <- rbind(AF2, AF3)
+    #Legend
+    LD <- rbind(AF2, AF3)
 
-      # ggsave(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Legend",ii, ".png"), width = 6000, height = 3500, units = "px", res=600)
-      cols.LD <- c("Resistance" = "black", "AA" = "blue")
-      type.LD <- c("Resistance" = "solid", "AA" = "dashed")
-      size.LD <- c("Resistance" = 1, "AA" = 1)
-      change_model <- ggplot(data = LD, aes(x = Age.plot, y = Percent)) +
+    # ggsave(file = paste0("Graphs/Step4_graphs/", Data$ANIMAL_ID, ".", "Legend",ii, ".png"), width = 6000, height = 3500, units = "px", res=600)
+    cols.LD <- c("Resistance" = "black", "AA" = "blue")
+    type.LD <- c("Resistance" = "solid", "AA" = "dashed")
+    size.LD <- c("Resistance" = 1, "AA" = 1)
+    change_model <- ggplot(data = LD, aes(x = Age.plot, y = Percent)) +
         geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1)+
         geom_line(aes(color = Curve, linetype=Curve, size = Curve)) +
         scale_color_manual(values = cols.LD, labels = c("Target_CFI", "Deviation")) +
@@ -630,7 +639,7 @@
         ) +
         theme(axis.text=element_text(size=12),
               axis.title=element_text(size=14,face="bold"))
-      ggsave(file = paste0("Graphs/Step4_graphs/Legend/", Data$ANIMAL_ID, ".", "Legend",ii, ".png"),change_model, device="png", width = 6000, height = 3500, units = "px", dpi=600)
+    ggsave(file = paste0("Graphs/Step4_graphs/Legend/", Data$ANIMAL_ID, ".", "Legend",ii, ".png"),change_model, device="png", width = 6000, height = 3500, units = "px", dpi=600)
     }
 
   neg <- rep(0, length(Age))
