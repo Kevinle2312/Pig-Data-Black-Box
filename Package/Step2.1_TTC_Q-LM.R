@@ -327,8 +327,6 @@
 
   } # end FOR loop
 
-
-
   #Check number of animals in this function type
   #Quadratic-linear function for CFI
   length(unique(ITC.param.pos2$ANIMAL_ID)); length(unique(Age.remain.pos2$ANIMAL_ID))
@@ -401,6 +399,13 @@
     ITC.param.p2 <- rbind(ITC.param.p2, param.p2.neg)
   }
 
+  ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
+  length(unique(ITC.param.p2.FT2$ANIMAL_ID))
+
+
+  ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
+  length(unique(ITC.param.p2.FT2$ANIMAL_ID))
+  
   ITC.param.p2.FT2 <- subset(ITC.param.p2, Xs >= ((Xlast - X0)*0.9 + X0))
   length(unique(ITC.param.p2.FT2$ANIMAL_ID))
 
