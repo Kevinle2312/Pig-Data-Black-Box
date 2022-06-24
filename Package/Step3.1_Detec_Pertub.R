@@ -18,6 +18,8 @@
   library(gplots)
   library(ggplot2)
   library(fda)
+  library(plotly)
+  library(reshape2)
 
 
   ################################################################
@@ -536,36 +538,67 @@
   #====================================================
     
     B <- dev.df[!is.na(dev.df$ppert),] #B contains only data of perturbations
+
+    temp <- cbind(Age,res)
     
-    png(filename = paste0("Graphs/Step3_graphs/", idc, ".", ID[idc], ".png"),
-        height = 600, width = 800, units = 'px', type="cairo-png")
-    par(mar=c(4,4.5,4,4.5))
-    plot(Age, res,
-         main = paste( "Pig ID:", i, ", Lambda =", lambda, "\nDifference between CFI and TTC"),
-         xlab = "Age (days)",
-         ylab = "Amount of difference: CFI - TTC (kg)",
-         type = "p", pch = 10, cex = 0.5,
-         ylim = c(min(B$dif.CFI, res),
-                  max(B$dif.CFI, res)),
-         cex.main = 1.5, cex.lab = 1.2, axes = F)
-    axis(1, at= seq(dif$eval_day[1],dif$eval_day[length(dif$eval_day)], by = 5), cex.axis = 1.1)
-    axis(2, at=, cex.axis = 1.1)
-    axis(4, at=, cex.axis = 1.1, col.axis = "blue", col = "blue")
-    mtext("Percentage of difference: CFI - TTC (%)", side=4, line = 3, cex = 1.2, col= "blue")
-    box()
-    abline(crit1,0, col = "red", lty = 2)
-    abline(0,0, col = "red")
-    if(crit2 == 7){
-    abline(v = (Age[1]+crit2), lty =2)
-    } else{}
-    points(B$eval_day, B$dif.CFI, type = "l", col = "blue", lwd = 2) 
-    points(pertub.table$Start, pertub.table$value.start,
-           col = "orange", pch=15, cex = 2)
-    points(pertub.table$End, pertub.table$value.end,
-           col = "green", pch=17, cex = 2)
-    points(pertub.table$Min.Day, pertub.table$Min.perc,
-           col = "purple", pch=19, cex = 2)
-    dev.off()
+    # png(filename = paste0("Graphs/Step3_graphs/", idc, ".", ID[idc], ".png"),
+    #     height = 600, width = 800, units = 'px', type="cairo-png")
+    # par(mar=c(4,4.5,4,4.5))
+    # Pertubation_graph <- plot(Age, res,
+    #      main = paste( "Pig ID:", i, ", Lambda =", lambda, "\nDifference between CFI and TTC"),
+    #      xlab = "Age (days)",
+    #      ylab = "Amount of difference: CFI - TTC (kg)",
+    #      type = "p", pch = 10, cex = 0.5,
+    #      ylim = c(min(B$dif.CFI, res),
+    #               max(B$dif.CFI, res)),
+    #      cex.main = 1.5, cex.lab = 1.2, axes = F)
+    # xaxis(1, at= seq(dif$eval_day[1],dif$eval_day[length(dif$eval_day)], by = 5), cex.axis = 1.1)
+    # xaxis(2, at=, cex.axis = 1.1)
+    # xaxis(4, at=, cex.axis = 1.1, col.axis = "blue", col = "blue")
+    # mtext("Percentage of difference: CFI - TTC (%)", side=4, line = 3, cex = 1.2, col= "blue")
+    # box()
+    # abline(crit1,0, col = "red", lty = 2)
+    # abline(0,0, col = "red")
+    # if(crit2 == 7){
+    # abline(v = (Age[1]+crit2), lty =2)
+    # } else{}
+    # points(B$eval_day, B$dif.CFI, type = "l", col = "blue", lwd = 2)
+    # points(pertub.table$Start, pertub.table$value.start,
+    #        col = "orange", pch=15, cex = 2)
+    # points(pertub.table$End, pertub.table$value.end,
+    #        col = "green", pch=17, cex = 2)
+    # points(pertub.table$Min.Day, pertub.table$Min.perc,
+    #        col = "purple", pch=19, cex = 2)
+    # dev.off()
+
+    # Pertubation_graph <- plot_ly(data.frame(temp), x = ~Age, y = ~res) %>%
+    #     layout(title = paste( "Pig ID:", i, ", Lambda =", lambda, "\nDifference between CFI and TTC", plot_bgcolor = "fffff" ),
+    #                     xaxis = list(title = 'Age (d)',cex.main = 1.5, cex.lab = 1.2, axes = F),
+    #                     yaxis = list(title = 'Amount of difference: CFI - TTC (kg)',type = "p", pch = 10, cex = 0.5),
+    #                     ylim = c(min(B$dif.CFI, res), max(B$dif.CFI, res), cex.main = 1.5, cex.lab = 1.2, axes = F),
+    #                     yaxis2 = list("Percentage of difference: CFI - TTC (%)", side=4, line = 3, cex = 1.2, col= "blue"),
+    #                     xaxis = list(1, at= seq(dif$eval_day[1],dif$eval_day[length(dif$eval_day)], by = 5), cex.axis = 1.1),
+    #                     xaxis = list(2,  cex.axis = 1.1),
+    #                     xaxis = list(4,  cex.axis = 1.1, col.axis = "blue", col = "blue"))
+    # if(crit2 == 7){
+    # abline(v = (Age[1]+crit2), lty =2)
+    # } else{}
+    # # highlight(B$eval_day, B$dif.CFI)
+    # # highlight(pertub.table$Start, pertub.table$value.start,
+    # #        col = "orange", pch=15, cex = 2)
+    # # highlight(pertub.table$End, pertub.table$value.end,
+    # #        col = "green", pch=17, cex = 2)
+    # # highlight(pertub.table$Min.Day, pertub.table$Min.perc,
+    # #        col = "purple", pch=19, cex = 2)
+    #
+    # # # layout(xaxis = list(1, at= seq(dif$eval_day[1],dif$eval_day[length(dif$eval_day)], by = 5), cex.axis = 1.1),
+    # # #               # xaxis = list(2, at=, cex.axis = 1.1),
+    # # #               # xaxis = list(4, at=, cex.axis = 1.1, col.axis = "blue", col = "blue"),
+    # # #               abline(crit1,0, col = "red", lty = 2) ,
+    # # #               abline(0,0, col = "red"))
+    #
+    #
+    # saveWidget(Pertubation_graph, file=paste0("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box/Graphs/Step3_graphs/hi/", idc, ".", ID[idc], ".html"))
     # Copy pertubation data for furture calculation
     if (!is.null(dev.save)){
       dev.save <- rbind(dev.save, dev.df)

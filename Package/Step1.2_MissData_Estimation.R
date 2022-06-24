@@ -40,6 +40,7 @@
   
   #Order number of Animal_ID
    ID <- unique(as.factor(No.NA.Data.0$ANIMAL_ID))
+  # ID <- 5070
 
   #===============================================================
   # For loop for automatically estimating and distributing missing data of all pigs
@@ -325,9 +326,10 @@
       # val.age <- c( Age.plot[!c(JRP_new$Age.plot %in% MissAge)],MissAge)
       id  <- c( seq_along(probs), ind)
       
-      Corr.DFI <- val.FI[order(id)]
+      # Corr.DFI <- val.FI[order(id)]
       Corr.Age <- val.age[order(id)]
       Corr.Age <- Corr.Age[order(Corr.Age)]
+      Corr.DFI <- val.FI[order(Corr.Age)]
     #----------------------------------------------------
     #     Recalculate CFI based on new DFI 
     #----------------------------------------------------
@@ -391,34 +393,34 @@
       #in the same working directory with this R-script     
       
       # For CFI plot
-      # png(filename = paste("Graphs/Step1_graphs/",idc,".",ID[idc],".","ki=", ki,".","CFI_MA_esti",".png",sep=""),
-      #     height = 720, width = 1200, units = 'px', type="cairo-png")
-      # plot(X1, Y1,
-      #      main = paste0("Pig_ID = ", ID[idc], ",", " idc = ", idc, "\nMissing rows:", A),
-      #      ylab = "Cummulative feed intake (kg)",
-      #      xlab = "Age (days)",
-      #      type = "o", lwd = 2, cex.main = 1.7,
-      #       pch = 1, cex.lab = 1.5, cex.axis = 1.3 , cex = 2, col = 'blue')
-      # points(X, Y,
-      #        lwd = 2, cex = 2,  type = "o")
-      # legend("bottomright",c("real data", "estimated data"),
-      #        pch = c(1,1), col = c("black", "blue"), bty = "n", cex = 1)
-      # dev.off()
+      png(filename = paste0("Graphs/Step1_graphs/Missing row/CFI/", idc, ".", ID[idc], ".", "ki=", ki, ".", "CFI_MA_esti", ".png"),
+          height = 720, width = 1200, units = 'px', type="cairo-png")
+      plot(X1, Y1,
+           main = paste0("Pig_ID = ", ID[idc], ",", " idc = ", idc, "\nMissing rows:", A),
+           ylab = "Cummulative feed intake (kg)",
+           xlab = "Age (days)",
+           type = "o", lwd = 2, cex.main = 1.7,
+            pch = 1, cex.lab = 1.5, cex.axis = 1.3 , cex = 2, col = 'blue')
+      points(X, Y,
+             lwd = 2, cex = 2,  type = "o")
+      legend("bottomright",c("real data", "estimated data"),
+             pch = c(1,1), col = c("black", "blue"), bty = "n", cex = 1)
+      dev.off()
       
       # For DFI
-      # png(filename = paste("Graphs/Step1_graphs/",idc,".",ID[idc],".","ki=", ki,".","DFI_MA_esti",".png",sep=""),
-      #     height = 720, width = 1200, units = 'px', type="cairo-png")
-      # plot(X1, Z1,
-      #      main = paste0("Pig_ID = ", ID[idc], ",", " idc = ", idc, "\nMissing rows:", A),
-      #      ylab = "Daily feed intake (kg)",
-      #      xlab = "Age (days)",
-      #      type = "o", lwd = 2, cex.main = 1.7,
-      #      pch = 1, cex.lab = 1.5, cex.axis = 1.3 , cex = 2, col = 'blue')
-      # points(Age.ini, Z,
-      #        lwd = 2, cex = 2,  type = "o")
-      # legend("bottomright",c("real data", "estimated data"),
-      #        pch = c(1,1), col = c("black", "blue"), bty = "n", cex = 1)
-      # dev.off()
+      png(filename = paste0("Graphs/Step1_graphs/Missing row/DFI/", idc, ".", ID[idc], ".", "ki=", ki, ".", "DFI_MA_esti", ".png"),
+          height = 720, width = 1200, units = 'px', type="cairo-png")
+      plot(X1, Z1,
+           main = paste0("Pig_ID = ", ID[idc], ",", " idc = ", idc, "\nMissing rows:", A),
+           ylab = "Daily feed intake (kg)",
+           xlab = "Age (days)",
+           type = "o", lwd = 2, cex.main = 1.7,
+           pch = 1, cex.lab = 1.5, cex.axis = 1.3 , cex = 2, col = 'blue')
+      points(Age.ini, Z,
+             lwd = 2, cex = 2,  type = "o")
+      legend("bottomright",c("real data", "estimated data"),
+             pch = c(1,1), col = c("black", "blue"), bty = "n", cex = 1)
+      dev.off()
       
       ki <- ki+1 #next series of missing rows
       #JRP_new with no missing rows
@@ -443,7 +445,7 @@
     #     Plot CFI graph after missing data estimation
     #====================================================
     
-    png(filename = paste0("Graphs/Step1_graphs/", idc, ".", ID[idc], ".", "MA_esti_overal", ".png"),
+    png(filename = paste0("Graphs/Step1_graphs/Final/CFI/", idc, ".", ID[idc], ".", "MA_esti_overal", ".png"),
          height = 720, width = 1200, units = 'px', type="cairo-png")
     plot(JRP_new_Final$Age.plot, JRP_new_Final$CFI.plot, 
          main = paste0("Pig_ID = ", ID[idc], ",", " idc = ", idc, "\nEstimating missing data"),

@@ -180,7 +180,7 @@
     
     ANIMAL_ID <- rep(i, dim(param.2)[1])
     XLAST <- rep(xlast, dim(param.2)[1])
-    FuncType <- unique(Data$FuncType) 
+    FuncType <- "QDR"
     param.2 <- cbind(ANIMAL_ID,
                      param.2,
                      x2[2:length(x2)],
@@ -210,12 +210,12 @@
     param.i <- as.numeric(param.2[dim(param.2)[1], 5:7])
     Xs <- param.2[dim(param.2)[1],]$Xs
     ITC <- pred.abcd.1(param.i, Data$Age)[[1]]
-    #Detecting negative element
+    # Detecting negative element
     # if (ITC[1] < 0) {
-    #   minus_detector <- 1
+    #   minus_detector <- rep(-1,dim(param.2)[1])
     # }
     # else {
-    #   minus_detector <- 0
+    #   minus_detector <- rep(0,dim(param.2)[1])
     # }
     #Add one column about the slope of DFI to the function
     Slope <- NULL
@@ -230,7 +230,8 @@
         Slope <- c(Slope, Slope.1)
       }
   
-    param.2$Slope <- Slope  
+    param.2$Slope <- Slope
+    # param.2$neg <- minus_detector
 
     #-------------------------------------------------------------------------------
     # Give Animal ID for each animal and save them to dataframes in the loop
@@ -247,43 +248,46 @@
    
   } # end FOR loop
   
-#Check number of animals in this function type
-#Quadratic function for CFI
-length(unique(ITC.param.pos1$ANIMAL_ID)); length(unique(Age.remain.pos1$ANIMAL_ID))
+  #Check number of animals in this function type
+  #Quadratic function for CFI
+  length(unique(ITC.param.pos1$ANIMAL_ID)); length(unique(Age.remain.pos1$ANIMAL_ID))
 
-#==============================================================================
-# Regrouping the animals have negative slope in QDR function to Linear function
-#==============================================================================   
-#Select animals have negative slope for DFI in Function type 2
-ID <- unique(ITC.param.pos1$ANIMAL_ID)
-ITC.param.p1 <- data.frame()
+  #==============================================================================
+  # Regrouping the animals have negative slope in QDR function to Linear function
+  #==============================================================================
+  #Select animals have negative slope for DFI in Function type 2
+  ID <- unique(ITC.param.pos1$ANIMAL_ID)
+  ITC.param.p1 <- data.frame()
 
-for(AA in seq_along(ID)){
-  i <- ID[AA]
-  param.p1.neg <- ITC.param.pos1[ITC.param.pos1$ANIMAL_ID == i,]
-  param.p1.neg <- param.p1.neg[dim(param.p1.neg)[1],]
-  
-  
-  ITC.param.p1 <- rbind(ITC.param.p1, param.p1.neg)
-}
-ITC.param.p1.neg <- subset(ITC.param.p1, Slope == -1)
+  for(AA in seq_along(ID)){
+    i <- ID[AA]
+    param.p1.neg <- ITC.param.pos1[ITC.param.pos1$ANIMAL_ID == i,]
+    param.p1.neg <- param.p1.neg[dim(param.p1.neg)[1],]
 
-#Remove animals have negative slope of DFI out of dataset for Function type 3
-ITC.param.pos1 <- subset(ITC.param.pos1, !(ANIMAL_ID %in% ITC.param.p1.neg$ANIMAL_ID))
-Age.remain.pos1 <- subset(Age.remain.pos1, !(ANIMAL_ID %in% ITC.param.p1.neg$ANIMAL_ID))
 
-#Add these animals to the group of linear function for CFI
-DFI.neg1 <- c( DFI.neg, unique(ITC.param.p1.neg$ANIMAL_ID))
-DFI.neg <- unique(DFI.neg1)
-# DFI.neg <- as.numeric(as.character(DFI.neg))
-length(DFI.neg)
+    ITC.param.p1 <- rbind(ITC.param.p1, param.p1.neg)
+  }
+  ITC.param.p1.neg <- subset(ITC.param.p1, Slope == -1)
+  # ITC.param.p1.neg <- subset(ITC.param.p1, neg == -1)
 
-#Reset the animals in group of Quadratic function for CFI
-DFI.pos1 <- unique(Age.remain.pos1$ANIMAL_ID)
+  #Remove animals have negative slope of DFI out of dataset for Function type 3
+  ITC.param.pos1 <- subset(ITC.param.pos1, !(ANIMAL_ID %in% ITC.param.p1.neg$ANIMAL_ID))
+  Age.remain.pos1 <- subset(Age.remain.pos1, !(ANIMAL_ID %in% ITC.param.p1.neg$ANIMAL_ID))
 
-#===============================================================
-#Save results to Rdata file
-#===============================================================
+  #Add these animals to the group of linear function for CFI
+  DFI.neg1 <- c( DFI.neg, unique(ITC.param.p1.neg$ANIMAL_ID))
+  DFI.neg <- unique(DFI.neg1)
+  # DFI.neg <- as.numeric(as.character(DFI.neg))
+  length(DFI.neg)
+
+
+
+  #Reset the animals in group of Quadratic function for CFI
+  DFI.pos1 <- unique(Age.remain.pos1$ANIMAL_ID)
+
+  #===============================================================
+  #Save results to Rdata file
+  #===============================================================
 
   save(ITC.param.pos1, Age.remain.pos1, 
        file = "Data/JRP.DFI.pos1.RData")

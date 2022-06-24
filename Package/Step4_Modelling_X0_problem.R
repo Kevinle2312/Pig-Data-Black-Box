@@ -43,26 +43,21 @@
      source("Package/Step4_functions_X0_problem.R")
      options(digits=3) 
 
-#===============================================================
-# DATA PREPARATION
-#===============================================================
-        
- #Order number of Animal_ID
-   ID <- unique(as.factor(No.NA.Data.1$ANIMAL_ID))
 
   #===============================================================
   # DATA PREPARATION
   #===============================================================
 
   #Order number of Animal_ID
-  # ID <- unique(as.factor(No.NA.Data.1$ANIMAL_ID))
-  ID <- 5775
-  # ID <- c(5433,5523,5524,5525,5596,5628,5629,5658)
+  ID <- unique(as.factor(No.NA.Data.1$ANIMAL_ID))
+  # ID <- ID[!ID %in% c(5655,5745)]
+  # ID <- 5149
+  # ID <- c(5745,5655,5149)
 
       
- #-------------------------------------------------------------------------------
- # Extract data for animal i
- #-------------------------------------------------------------------------------
+  #-------------------------------------------------------------------------------
+  # Extract data for animal i
+  #-------------------------------------------------------------------------------
   IDC <- seq_along(ID)
   Data2 <- NULL
   for (idc in IDC){
@@ -76,20 +71,52 @@
   res <- fn.res$res[fn.res$ANIMAL_ID == i]
   
   #Information of TTC function
-  if (i %in% unique(ITC.param.neg$ANIMAL_ID)) {
+ if(i %in% unique(ITC.param.neg$ANIMAL_ID)){
       TTC.param <- ITC.param.neg[ITC.param.neg$ANIMAL_ID == i,]
-      FuncType <- TTC.param$FuncType; FuncType
-      Slope <- TTC.param$Slope
+      param.i <- ITC.param.neg[ITC.param.neg$ANIMAL_ID == i,]
+      FuncType <- param.i[dim(param.i)[1],]$FuncType
+      Slope <- param.i[dim(param.i)[1],]$Slope
+      param.i <- as.numeric(param.i[dim(param.i)[1], 4:5])
+      ITC <- pred.abcd.0(param.i, Age)[[1]]
+      # daybefore <- pred.abcd.0(param.i, Age[1] - 1)[[1]]
+      ITD <- rep(param.i[2], length(Age))
 
-    } else if (i %in% unique(ITC.param.pos1$ANIMAL_ID)){
+      Data.remain <- Age.remain.neg[Age.remain.neg$ANIMAL_ID == i,]
+      Age.remain <- Data.remain$Age
+      DFI.remain <- Data.remain$Observed_DFI
+      CFI.remain <- Data.remain$Observed_CFI
+
+
+    } else if(i %in% unique(ITC.param.pos1$ANIMAL_ID)){
       TTC.param <- ITC.param.pos1[ITC.param.pos1$ANIMAL_ID == i,]
-      FuncType <- TTC.param$FuncType; FuncType
-      Slope <- TTC.param$Slope
+      param.i <- ITC.param.pos1[ITC.param.pos1$ANIMAL_ID == i,]
+      FuncType <- param.i[dim(param.i)[1],]$FuncType
+      Slope <- param.i[dim(param.i)[1],]$Slope
+      param.i <- as.numeric(param.i[dim(param.i)[1], 5:7])
+      ITC <- abs(pred.abcd.1(param.i, Age)[[1]])
+      daybefore <- pred.abcd.1(param.i, Age[1] - 1)[[1]]
+      ITD <- pred.abcd.1(param.i, Age)[[2]]
 
-    } else {
+      Data.remain <- Age.remain.pos1[Age.remain.pos1$ANIMAL_ID == i,]
+      Age.remain <- Data.remain$Age
+      DFI.remain <- Data.remain$Observed_DFI
+      CFI.remain <- Data.remain$Observed_CFI
+
+    } else{
       TTC.param <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
-      FuncType <- TTC.param$FuncType; FuncType
-      Slope <- TTC.param$Slope
+      param.i <- ITC.param.pos2[ITC.param.pos2$ANIMAL_ID == i,]
+      FuncType <- param.i[dim(param.i)[1],]$FuncType
+      Slope <- param.i[dim(param.i)[1],]$Slope
+      Xs <- param.i[dim(param.i)[1],]$Xs
+      param.i <- as.numeric(param.i[dim(param.i)[1], 6:8])
+      ITC <- abs(pred.abcd.2(param.i, Age)[[1]])
+      daybefore <- pred.abcd.2(param.i, Age[1] - 1)[[1]]
+      ITD <- pred.abcd.2(param.i, Age)[[2]]
+
+      Data.remain <- Age.remain.pos2[Age.remain.pos2$ANIMAL_ID == i,]
+      Age.remain <- Data.remain$Age
+      DFI.remain <- Data.remain$Observed_DFI
+      CFI.remain <- Data.remain$Observed_CFI
 
     }
 
@@ -131,24 +158,28 @@
   # Calulate TTC using abcd function
   #-------------------------------------------------------------------------------
 
-  if(FuncType == "LM"){
-      param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 4:5])
-      ITC <- pred.abcd.0(param.i, Age)[[1]]
-      ITD <- rep(param.i[2], length(Age))
+  # if(FuncType == "LM"){
+  #     param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 4:5])
+  #     ITC <- pred.abcd.0(param.i, Age)[[1]]
+  #     daybefore <- pred.abcd.0(param.i, Age[1] - 1)[[1]]
+  #     ITD <- rep(param.i[2], length(Age))
+  #
+  #   } else if(FuncType == "QDR"){
+  #     param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 5:7])
+  #     ITC <- pred.abcd.1(param.i, Age)[[1]]
+  #     daybefore <- pred.abcd.1(param.i, Age[1] - 1)[[1]]
+  #     ITD <- pred.abcd.1(param.i, Age)[[2]]
+  #
+  #   } else{
+  #     param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 6:8])
+  #     Xs <- TTC.param[dim(TTC.param)[1],]$Xs
+  #
+  #     ITC <- pred.abcd.2(param.i, Age)[[1]]
+  #     daybefore <- pred.abcd.2(param.i, Age[1] - 1)[[1]]
+  #     ITD <- pred.abcd.2(param.i, Age)[[2]]
+  #
+  #   }
 
-    } else if(FuncType == "QDR"){
-      param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 5:7])
-      ITC <- pred.abcd.1(param.i, Age)[[1]]
-      ITD <- pred.abcd.1(param.i, Age)[[2]]
-
-    } else{
-      param.i <- as.numeric(TTC.param[dim(TTC.param)[1], 6:8])
-      Xs <- TTC.param[dim(TTC.param)[1],]$Xs
-
-      ITC <- pred.abcd.2(param.i, Age)[[1]]
-      ITD <- pred.abcd.2(param.i, Age)[[2]]
-
-    }
   # #Magnitude of the perturbation
   magnitude <- fn.res[fn.res$ANIMAL_ID == i,]
 
@@ -164,6 +195,7 @@
   pertubation_member <- rep(0, length(Age))
   y_out <- rep(0, length(Age))
   Resistence <- rep(0, length(Age))
+  Resistence_total <- rep(0, length(Age))
   pp <- 0
   CompFI_total <- rep(0, length(Age))
   for (ii in fn.table.input$ppert){
@@ -357,11 +389,12 @@
         # Create a grid to choose the best initial values for k1 and k2
         Data.xy <- Data
         times <- Data.xy$Age.plot
-        yinit <- c(CumFI = abs(ITC[1]) ) #state
+        yinit <- c(CumFI = ITC[1]) #state
         times.ode <- seq(from = Age[1], to = Age[length(Age)], by = .1)
 
-        st1 <- expand.grid(p1 = seq(0, 1, len = 10),
-                           p2 = seq(1, 10, len = 10))
+        st1 <- expand.grid(p1 = seq(0, 1, len = 100),
+                           p2 = seq(1, 10, len = 100))
+        # st1 <- st1[-1]
         #
         # # Use NLS2 to select the best initial parameters
         st2 <- nls2(CFI.plot ~ ODE.CFI.obj.nls.2(p1,p2),
@@ -467,10 +500,16 @@
     ITC; ITD
     #Compensatory feed intake
     CompFI <- (1-yout[, 2]/ITC)*max.compFI1
-    # CompFI_total <- CompFI_total + CompFI
+    if (pp != 1){
+      isnextpertubation <- ifelse(Time>start & Time<end,0,1)
+      CompFI_total <- isnextpertubation*CompFI_total + CompFI
+    }else{
+      CompFI_total <- CompFI
+    }
+
     #Resistence
     Resistence <- onoff*(p1-1)
-    # Resistence <- Resistence + Resistence_per
+    Resistence_total <- Resistence_total + Resistence
     #CFI modeling
     y_out <- (y_out+yout[,2])/as.numeric(pp)
     #Simulation of DFI
@@ -479,8 +518,7 @@
     Ratio.DFI <- DFI.sim/ITD
     dif <- yout[,2]/ITC
     #Pertubation quantification
-    pertubation_member <- Resistence + CompFI
-    Pertubation <- Pertubation + pertubation_member
+    # Pertubation <- Pertubation + pertubation_member
     #-----------------------------
     # plot the results
     #-----------------------------
@@ -622,9 +660,9 @@
     change_model <- ggplot(data = LD, aes(x = Age.plot, y = Percent)) +
         geom_hline(yintercept=0, linetype="dashed", color = "blue", size = 1)+
         geom_line(aes(color = Curve, linetype=Curve, size = Curve)) +
-        scale_color_manual(values = cols.LD, labels = c("Target_CFI", "Deviation")) +
-        scale_linetype_manual(values = type.LD, labels = c("Target_CFI", "Deviation"))+
-        scale_size_manual(values = size.LD, labels = c("Target_CFI", "Deviation"))+
+        scale_color_manual(values = cols.LD, labels = c("Deviation","Target_CFI")) +
+        scale_linetype_manual(values = type.LD, labels = c("Deviation","Target_CFI"))+
+        scale_size_manual(values = size.LD, labels = c("Deviation","Target_CFI"))+
         xlab("Age, d") +
         ylab("Change in daily feed intake (%)") +
         expand_limits(y=-100)+
@@ -641,10 +679,10 @@
               axis.title=element_text(size=14,face="bold"))
     ggsave(file = paste0("Graphs/Step4_graphs/Legend/", Data$ANIMAL_ID, ".", "Legend",ii, ".png"),change_model, device="png", width = 6000, height = 3500, units = "px", dpi=600)
     }
-
-  neg <- rep(0, length(Age))
-  neg <- ifelse(Pertubation > 0 & Resistence != 0, -1, 1)
-  DFI.sims <- (neg*Pertubation + 1)*ITD
+  Pertubation <- Resistence_total + CompFI_total
+  # neg <- rep(0, length(Age))
+  # neg <- ifelse(Pertubation > 0 & Resistence != 0, -1, 1)
+  DFI.sims <- (Pertubation + 1)*ITD
   if (length(fn.table.input$ppert) != 0) {
       #DFI data preparation
       df1 <- data.frame(cbind(Age, ITD))
@@ -699,7 +737,9 @@
       #Calculating Simulation value
       cfi_sim <- c();
       cfi_count <- c(1:length(DFI.sim))
-      temp <- 0
+
+      # temp <- ifelse(ITC[1] > ITD[1]*2,daybefore,0)
+      temp <- yinit
       for(iii in cfi_count){
         temp <-  temp + DFI.sims[iii]
         cfi_sim[iii] <- temp
@@ -743,14 +783,21 @@
               axis.title=element_text(size=14,face="bold"))
       ggsave(file = paste0("Graphs/Step4_graphs/Simulation CFI/", Data$ANIMAL_ID, ".", "Simu_CFI",ii, ".png"),plot_simu_cfi_model, device ="png", width = 6000, height = 3500, units = "px", dpi=600)
       # dev.off()
-
+     IDs <- rep(i,length(Age))
+     Data1.1 <- cbind(Data$ANIMAL_ID,Data$Age.plot)
+     names(Data1.1) <- c("ID","Age")
+     Data1.2 <- cbind(ITC, ITD)
+     names(Data1.2) <- c("ITC", "ITD")
+     Data1.3 <- cbind(df2$DFI.plot, cf2$CFI.plot)
+     names(Data1.3) <- c("Sim.DFI","Sim.CFI")
+     Data1 <- cbind(Data1.1,Data1.2,Data1.3)
+     # Data1 <- cbind(Age,IDs, ITC, ITD, df2$DFI.plot, cf2$CFI.plot)
+     # names(Data1) <- c("Age","ID","ITC", "ITD", "Sim.DFI","Sim.CFI")
+     Data2 <- rbind(Data2,Data1)
+     write.csv2(Data2,file="EAAP_Data3.csv",row.names=FALSE)
     }
 
-  IDs <- rep(i,length(Age))
-  Data1 <- cbind(Age,IDs, ITC, ITD, df2$DFI.plot, cf2$CFI.plot)
-  names(Data1) <- c("Age","ID","ITC", "ITD", "Sim.DFI","Sim.CFI")
-  Data2 <- rbind(Data2,Data1)
-  write.csv2(Data2,file="EAAP_Data3.csv",row.names=FALSE)
+
 
   # dev.off()
 

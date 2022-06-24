@@ -178,7 +178,7 @@
 
     ANIMAL_ID <- rep(i, dim(param.2)[1])
     XLAST <- rep(xlast, dim(param.2)[1])
-    FuncType <- unique(Data$FuncType) 
+    FuncType <- "LM"
     param.2 <- cbind(ANIMAL_ID,
                      param.2,
                      XLAST,

@@ -44,6 +44,7 @@
   
   #Order number of Animal_ID
   ID <- unique(as.factor(No.NA.Data$ANIMAL_ID))
+  # ID <- 5655
 
   #===============================================================
   # For loop for automatically estimating ITC of all pigs
@@ -162,13 +163,11 @@
   length(unique(DFI.pos1$idc.1))
   DFI.pos2 <- subset(No.NA.Data.1, FuncType == "QLM")
   length(unique(DFI.pos2$idc.1))
-  
+
   DFI.neg <- unique(DFI.neg$ANIMAL_ID); DFI.neg
   DFI.pos1 <- unique(DFI.pos1$ANIMAL_ID); DFI.pos1
   DFI.pos2 <- unique(DFI.pos2$ANIMAL_ID); DFI.pos2
-  # DFI.pos1 <- as.numeric(as.character(DFI.pos1))
-  # DFI.pos2 <- as.numeric(as.character(DFI.pos2))
-  # DFI.neg <- as.numeric(as.character(DFI.neg))
+
   #===============================================================
   #Save results to Rdata file
   #===============================================================
