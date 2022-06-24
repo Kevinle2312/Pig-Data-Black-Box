@@ -7,7 +7,7 @@
 
 
   rm(list=ls(all=TRUE)) #To remove the hisory
-  dev.off() #To close all graphs
+  # dev.off() #To close all graphs
 
   #-------------------------------------------------------------------------------
   # Packages needed for estimaton of Ideal trajectory - nonlinear regression
@@ -17,6 +17,8 @@
   library(lattice)
   library(ggplot2)
   library(plotrix)
+  # library(tidyverse)
+  library(lubridate)
 
   ################################################################
 
@@ -73,6 +75,7 @@
     #extract dataset for animal i
     Data <- JRP_NA.0[JRP_NA.0$ANIMAL_ID == i,]
     Data
+    Data <- as.data.frame(Data)
     #Age vector associated with
     Age.plot <- Age[Pig_ID == i]
 
@@ -82,34 +85,25 @@
     # Plot DFI graph
 
     # tiff(file = paste0("Graphs/Step0_graphs/DFI/", idc, ".", Data$ANIMAL_ID, ".", "DFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
-    DFI_fig <- plot_ly(Data, x = Age.plot, y = DFI.plot, type = 'scatter', mode = 'markers') %>%
-      layout(title = paste("Daily feed intake measured from an auto-feeder","Pig ID:", ID[idc]), xaxis = list(title = 'Age, d'),
-         yaxis = list(title = 'Daily Feed Intake, kg/ d'))
-      geom_point(shape = 21, colour = "black", fill = "white", size = 4, stroke = 1.5)
-      scale_y_continuous(breaks=seq(0, 8, 1)) %>%
-      scale_x_continuous(breaks=seq(0, 300, 20)) %>%
-      theme(plot.title = element_text(hjust = .5)) %>%
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.background = element_blank(),
-            axis.line = element_line(colour = "black")
-      ) %>%
-      theme(axis.text=element_text(size=12),
-            axis.title=element_text(size=14,face="bold"))
-    png(filename = paste0("Graphs/Step0_graphs/Observasion_DFI/", idc, ".", ID[idc], ".", "DFI", ".png"),
-    height = 536 , width = 700, units = 'px', type="cairo-png")
-    par(mar=c(4.5,4.5,4.5,1.5))
-    plot(Age.plot, DFI.plot, # Observation data of DFI
-          main = paste0("Daily Feed Intake measured from automatic feeder", "\nPig ID = ", i, ",", " idc = ", idc),
-          ylab = "Daily Feed Intake (kg)",
-          xlab = "Age (days)",
-          type="p", col ="black", cex.main = 1.7, cex = 1.5,
-          cex.axis = 1.5, cex.lab = 1.5)
-    legend("topleft", "DFI (kg/ day)",
-           col="black",
-           pch=1, bty = "n", cex = 1.2)
-    saveWidget(DFI_fig, file=paste0("Graphs/Step0_graphs/Observasion_DFI/", idc, ".", ID[idc], ".", "DFI", ".html"))
-    dev.off()
+    DFI.fig <- plot_ly(data.frame(Data), x = ~Age.plot, y = ~DFI.plot,
+               marker = list(size = 10,
+                             color = "#052CA3",
+                             line = list(color = 'rgba(152, 0, 0, .8)',
+                                         width = 2))) %>%
+                layout(title =paste("Daily Feed Intake","\nPig ID:", ID[idc]), plot_bgcolor = "fffff", xaxis = list(title = 'Age (d)'),
+                        yaxis = list(title = 'Daily Feed Intake, kg') )
+                scale_y_continuous(breaks=seq(0, 400, 40)) %>%
+                scale_x_continuous(breaks=seq(0, 300, 20)) %>%
+                theme(plot.title = element_text(hjust = .5)) %>%
+                theme(panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank(),
+                      axis.line = element_line(colour = "black")
+                ) %>%
+                theme(axis.text=element_text(size=12),
+                      axis.title=element_text(size=14,face="bold"))
+    saveWidget(ggplotly(DFI.fig), file=paste0("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box/Graphs/Step0_graphs/Observasion_DFI/", idc, ".", ID[idc], ".", "DFI", ".html"))
+
     #----------------------------------------------------
     # Calculate CFI from DFI
     #----------------------------------------------------
@@ -121,25 +115,41 @@
       CFI.plot[j] <- CFI.plot[j-1]+DFI.plot[j]
     }
 
+    dt <- cbind(Age.plot,CFI.plot)
+
     # Plot CFI graph
     # tiff(file = paste0("Pig Data Black Box/Graphs/Step0_graphs/CFI/", idc, ".", Data$ANIMAL_ID, ".", "CFI", ".png"), width = 6000, height = 3500, units = "px", res=600)
-    CFI.Fig <- ggplot(Data, aes(x = Age.plot, y = CFI.plot)) +
-      geom_point(shape = 21, colour = "black", fill = "white", size = 3, stroke = 1.2) +
-      xlab("Age, d") +
-      ylab("Cumulative Feed Intake, kg") +
-      scale_y_continuous(breaks=seq(0, 400, 40)) +
-      scale_x_continuous(breaks=seq(0, 300, 20)) +
-      ggtitle(paste("Cumulative Feed Intake","\nPig ID:", ID[idc])) +
-      theme(plot.title = element_text(hjust = .5)) +
-      theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.background = element_blank(),
-            axis.line = element_line(colour = "black")
-      ) +
-      theme(axis.text=element_text(size=12),
-            axis.title=element_text(size=14,face="bold"))
+    CFI.Fig <- plot_ly(data.frame(dt), x = ~Age.plot, y = ~CFI.plot,
+               marker = list(size = 10,
+                             color = "#052CA3",
+                             line = list(color = 'rgba(152, 0, 0, .8)',
+                                         width = 2))) %>%
+                layout(title =paste("Cumulative Feed Intake","\nPig ID:", ID[idc]), plot_bgcolor = "fffff", xaxis = list(title = 'Sepal Length (cm)'),
+                        yaxis = list(title = 'Cumulative Feed Intake, kg') )
+                scale_y_continuous(breaks=seq(0, 400, 40)) %>%
+                scale_x_continuous(breaks=seq(0, 300, 20)) %>%
+                theme(plot.title = element_text(hjust = .5)) %>%
+                theme(panel.grid.major = element_blank(),
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank(),
+                      axis.line = element_line(colour = "black")
+                ) %>%
+                theme(axis.text=element_text(size=12),
+                      axis.title=element_text(size=14,face="bold"))
+    # CFI.Fig <- CFI.Fig %>%  layout(title =paste("Cumulative Feed Intake","\nPig ID:", ID[idc]), plot_bgcolor = "#e5ecf6", xaxis = list(title = 'Sepal Length (cm)'),
+    #      yaxis = list(title = 'Cumulative Feed Intake, kg') )
+
+
+
+
+
+    # CFI.Fig <- plot_ly(data.frame(dt),mapping = aes(x = Age.plot , y = CFI.plot)) %>%
+    #   geom_point(shape = 21, colour = "black", fill = "white", size = 3, stroke = 1.2) %>%
+    #   layout(title =paste("Cumulative Feed Intake","\nPig ID:", ID[idc]), plot_bgcolor = "#e5ecf6", xaxis = list(title = 'Sepal Length (cm)'),
+    #      yaxis = list(title = 'Cumulative Feed Intake, kg') )
+
     saveWidget(ggplotly(CFI.Fig), file=paste0("C:/Users/Kevin Le/PycharmProjects/Pig Data Black Box/Graphs/Step0_graphs/Observasion_CFI/", idc, ".", ID[idc], ".", "CFI", ".html"))
-    dev.off()
+    # dev.off()
 
 
   } # end of FOR loop
